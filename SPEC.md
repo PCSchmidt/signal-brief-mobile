@@ -2,8 +2,8 @@
 
 ## Current Gate
 
-- Gate: Test Planning
-- Status: Frontend approved, test strategy pending approval
+- Gate: End-to-End Daily Brief
+- Status: Live backend integration, local persistence, backend tests, initial mobile Jest coverage, and first Maestro smoke flow are implemented
 
 ## MVP Goal
 
@@ -26,25 +26,25 @@ Developers and technical professionals who want to follow AI research are overwh
 ### Mobile
 
 - Onboarding with topic selection
-- Daily briefing screen with five ranked paper cards
+- Daily briefing screen with five ranked paper cards from the live backend
 - Paper detail view with summary bullets, metadata, and outbound arXiv link
 - Saved items screen backed by local device storage
 - Settings screen for topic preferences and notification toggle
-- Push notification when the daily digest is ready
+- Startup bootstrap and refresh states for loading, error, and digest-not-ready paths
 
 ### Backend
 
 - Fetch recent papers from a fixed arXiv source set
 - Normalize paper metadata
 - Rank papers for a topic-aware daily digest
-- Generate concise bullet summaries through a summarization service
-- Expose digest and paper endpoints for the mobile app
-- Run a scheduled job to create the daily digest
+- Persist assembled digests by date and selected topics
+- Expose health, digest, push-token, and internal digest-generation endpoints for the mobile app
+- Warm the default digest on startup and fall back to read-through digest generation on cache miss
 
 ### Data And Platform
 
-- Supabase Postgres tables for papers, digests, and digest items
-- Minimal operational scripts for scheduled generation and seed setup
+- Local device persistence for saved items and topic preferences
+- File-based local digest persistence during the current backend stage
 - Environment configuration for local development and hosted deployment
 
 ## Out Of Scope For The First Prototype
@@ -77,7 +77,6 @@ Developers and technical professionals who want to follow AI research are overwh
 
 - `GET /health`
 - `GET /brief/today`
-- `GET /papers/{paper_id}`
 - `POST /device/register-push-token`
 - `POST /jobs/generate-digest` for protected internal use
 
@@ -90,8 +89,8 @@ Developers and technical professionals who want to follow AI research are overwh
 
 ## Quality Bar
 
-- Digest generation succeeds on a fixed schedule without manual intervention
-- Summaries are concise, readable, and grounded in paper metadata
+- Digest generation succeeds on startup and on demand without manual repair during local development
+- Summaries are concise, readable, and grounded in title and abstract metadata
 - Mobile app loads today’s digest with acceptable latency on a real device
 - The prototype is stable enough for public release, even if feature scope remains intentionally narrow
 

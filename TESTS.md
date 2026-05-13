@@ -27,6 +27,13 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Runner: Maestro
 - Why this choice: easier to stand up than Detox for a solo project, works well for cross-platform mobile smoke flows, and is sufficient for a prototype that needs real-device confidence more than exhaustive native automation.
 
+## Current Test Status
+
+- Backend API tests are implemented and passing with `pytest`.
+- Mobile screen tests are started with Jest and React Native Testing Library.
+- The first Maestro smoke flow exists at `mobile/.maestro/critical-path.web.yaml`.
+- Native-device Maestro coverage is still pending; the current smoke flow targets Expo web.
+
 ## Coverage Targets
 
 ### Mobile
@@ -108,10 +115,14 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Add Jest and React Native Testing Library to the mobile app
 - Cover the onboarding screen, daily brief screen, and saved-items empty state
 
+Status: partially complete. Daily brief screen coverage is in place; onboarding and saved-items tests remain open.
+
 ### During Backend Scaffold
 
 - Add pytest, pytest-asyncio, pytest-cov, httpx, and respx
 - Add API contract tests and service tests alongside implementation
+
+Status: complete for the current backend surface.
 
 ### Before Public Prototype Submission
 
@@ -119,6 +130,8 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Run the full backend test suite with coverage
 - Run the Maestro smoke flows on at least one real device path or stable emulator path
 
+Status: in progress. Backend tests and the first mobile/Jest and Maestro smoke slices are in place, but real-device Maestro coverage is not done yet.
+
 ## Approval Bar
 
-We should not start backend implementation until this testing plan is accepted, because the ranking logic, ingestion boundaries, and digest loop are the highest-risk parts of the project.
+This plan has already been accepted and partially implemented; it now serves as the checklist for hardening the prototype before public release.

@@ -4,6 +4,14 @@
 
 Move from empty repo to a public prototype in a controlled sequence that proves the core value first: a reliable daily AI paper briefing on a mobile device.
 
+## Current Progress
+
+- Planning docs, mockups, and frontend shell are complete.
+- The FastAPI backend is live with arXiv ingestion, digest persistence, startup warmup, and topic-aware brief generation.
+- The mobile app is connected to the live `/brief/today` endpoint.
+- Local persistence for saved items and topic preferences is implemented.
+- Backend `pytest`, mobile Jest coverage for the brief screen, and a first Maestro web smoke flow are in place.
+
 ## Phase 1: Planning And Boundaries
 
 - Confirm the scope in the planning docs
@@ -21,10 +29,9 @@ Move from empty repo to a public prototype in a controlled sequence that proves 
 ## Phase 3: Backend Foundation
 
 - Scaffold FastAPI with a small service layout
-- Create Supabase schema for papers, digests, digest items, and device preferences
 - Add an arXiv ingestion module for a fixed source set
-- Add ranking and summarization services behind clean interfaces
-- Add a scheduled digest generation job and basic health checks
+- Add ranking and digest assembly services behind clean interfaces
+- Add persisted digest storage and basic health checks
 
 ## Phase 4: End-To-End Integration
 
@@ -32,6 +39,13 @@ Move from empty repo to a public prototype in a controlled sequence that proves 
 - Persist topic preferences and saved items locally on the device
 - Register push tokens and send digest-ready notifications
 - Test on real devices, not only simulators
+
+Current status:
+
+- Live digest endpoints connected
+- Local topic and save persistence complete
+- Push token registration is still a placeholder
+- Expo web smoke coverage added; native device smoke coverage still pending
 
 ## Phase 5: Release Hardening
 

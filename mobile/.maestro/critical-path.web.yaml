@@ -1,0 +1,26 @@
+url: http://127.0.0.1:19006/
+---
+- clearState: "http://127.0.0.1:19006/"
+- launchApp
+- assertVisible: "Daily setup"
+- assertVisible: "Build your brief"
+- tapOn: "Continue"
+- tapOn:
+    text: "Back"
+    optional: true
+- tapOn: "Open paper action"
+- assertVisible: "Why it matters"
+- assertVisible: "Abstract snapshot"
+- tapOn: "Back"
+- tapOn: "Save paper action"
+- tapOn:
+    point: "50%,95%"
+- assertVisible: "Papers worth revisiting"
+- assertNotVisible: "No saved papers yet"
+- assertVisible: "Remove"
+- launchApp
+- assertNotVisible: "Daily setup"
+- tapOn:
+    point: "50%,95%"
+- assertVisible: "Papers worth revisiting"
+- assertNotVisible: "No saved papers yet"

@@ -25,11 +25,27 @@ export function PaperCard({
         <Text style={styles.dateText}>{paper.publishedAt}</Text>
       </View>
 
-      <Pressable onPress={onOpen} style={styles.titleWrap}>
+      <Pressable accessibilityLabel="Open paper title" accessibilityRole="button" onPress={onOpen} style={styles.titleWrap}>
         <Text style={styles.title}>{paper.title}</Text>
       </Pressable>
 
       <Text style={styles.authors}>{paper.authors}</Text>
+
+      <View style={styles.actionRow}>
+        <Pressable
+          accessibilityLabel={isSaved ? 'Saved paper action' : 'Save paper action'}
+          accessibilityRole="button"
+          onPress={onToggleSave}
+          style={styles.secondaryAction}
+        >
+          <Feather color={colors.text} name="bookmark" size={16} />
+          <Text style={styles.secondaryActionLabel}>{isSaved ? 'Saved' : 'Save'}</Text>
+        </Pressable>
+
+        <Pressable accessibilityLabel="Open paper action" accessibilityRole="button" onPress={onOpen} style={styles.primaryAction}>
+          <Text style={styles.primaryActionLabel}>Open</Text>
+        </Pressable>
+      </View>
 
       <View style={styles.tagRow}>
         {paper.tags.map((tag) => (
@@ -38,23 +54,12 @@ export function PaperCard({
       </View>
 
       <View style={styles.bulletList}>
-        {paper.summaryBullets.slice(0, 3).map((bullet) => (
+        {paper.summaryBullets.slice(0, 2).map((bullet) => (
           <View key={bullet} style={styles.bulletRow}>
             <View style={styles.bulletDot} />
             <Text style={styles.bulletText}>{bullet}</Text>
           </View>
         ))}
-      </View>
-
-      <View style={styles.actionRow}>
-        <Pressable onPress={onToggleSave} style={styles.secondaryAction}>
-          <Feather color={colors.text} name="bookmark" size={16} />
-          <Text style={styles.secondaryActionLabel}>{isSaved ? 'Saved' : 'Save'}</Text>
-        </Pressable>
-
-        <Pressable onPress={onOpen} style={styles.primaryAction}>
-          <Text style={styles.primaryActionLabel}>Open</Text>
-        </Pressable>
       </View>
     </View>
   );

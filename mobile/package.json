@@ -7,6 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest",
+    "test:maestro:web": "maestro test .maestro/critical-path.web.yaml",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit"
   },
