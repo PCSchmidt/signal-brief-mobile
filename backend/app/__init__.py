@@ -1,0 +1,1 @@
+"""Signal Brief backend application package."""

@@ -7,7 +7,7 @@ from app.schemas import (
     PushTokenRegistrationRequest,
     PushTokenRegistrationResponse,
 )
-from app.services.brief_service import get_today_brief, queue_digest_generation
+from app.services.brief_service import BriefServiceError, get_today_brief, queue_digest_generation
 from app.settings import Settings, get_settings
 
 router = APIRouter()
@@ -25,7 +25,13 @@ def health(settings: Settings = Depends(get_settings)) -> HealthResponse:
 
 @router.get("/brief/today", response_model=DailyBriefResponse)
 def brief_today() -> DailyBriefResponse:
-    return get_today_brief()
+    try:
+        return get_today_brief()
+    except BriefServiceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail="Unable to assemble today's brief from arXiv.",
+        ) from exc
 
 
 @router.post(

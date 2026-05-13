@@ -5,7 +5,7 @@ FastAPI backend for Signal Brief Mobile.
 ## Current Scope
 
 - Health endpoint
-- Daily brief endpoint with mock service data
+- Daily brief endpoint backed by live arXiv ingestion and digest assembly
 - Push token registration placeholder
 - Internal digest generation placeholder
 
