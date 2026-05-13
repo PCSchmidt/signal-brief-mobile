@@ -23,7 +23,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'J. Patel, R. Kim, L. Torres',
     id: 'paper-1',
     publishedAt: 'May 13, 2026',
-    score: 96,
+    rank: 1,
     summaryBullets: [
       'Introduces a routing policy that only triggers slower reasoning passes for harder prompts.',
       'Reports lower average latency while preserving most benchmark accuracy on mixed workloads.',
@@ -43,7 +43,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'M. Evans, S. Roy, D. Chan',
     id: 'paper-2',
     publishedAt: 'May 12, 2026',
-    score: 92,
+    rank: 2,
     summaryBullets: [
       'Builds evaluation sets that isolate retrieval quality from downstream generation quality.',
       'Shows how common RAG metrics hide failure modes when context is partially relevant.',
@@ -63,7 +63,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'A. Singh, T. Wu',
     id: 'paper-3',
     publishedAt: 'May 11, 2026',
-    score: 90,
+    rank: 3,
     summaryBullets: [
       'Studies how automated judges rate summary quality across technical domains.',
       'Finds that judge-model confidence often exceeds actual consistency on nuanced factual checks.',
@@ -83,7 +83,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'C. Lopez, Y. Zhang, K. Nair',
     id: 'paper-4',
     publishedAt: 'May 10, 2026',
-    score: 88,
+    rank: 4,
     summaryBullets: [
       'Presents a memory compression method for long-running agent workflows with images and text.',
       'Keeps retrieval quality stable while shrinking context footprint across task horizons.',
@@ -103,7 +103,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'R. Hale, N. Brooke, P. Iyer',
     id: 'paper-5',
     publishedAt: 'May 9, 2026',
-    score: 85,
+    rank: 5,
     summaryBullets: [
       'Focuses on understanding sparse scientific figures, not everyday natural images.',
       'Improves reasoning on labeled diagrams by mixing structured annotations into pretraining.',
@@ -123,7 +123,7 @@ export const MOCK_PAPERS: Paper[] = [
     authors: 'H. Farah, E. Monroe',
     id: 'paper-6',
     publishedAt: 'May 8, 2026',
-    score: 82,
+    rank: 6,
     summaryBullets: [
       'Examines how smaller teams can tune safer model behavior without full-scale retraining budgets.',
       'Compares lightweight alignment strategies under realistic compute limits.',

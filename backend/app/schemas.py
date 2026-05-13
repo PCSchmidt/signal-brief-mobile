@@ -45,4 +45,4 @@ class PushTokenRegistrationResponse(BaseModel):
 class DigestGenerationResponse(BaseModel):
     digest_date: str
     message: str
-    status: Literal["queued"]
+    status: Literal["generated", "queued"]

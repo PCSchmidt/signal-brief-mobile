@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from pathlib import Path
 import re
 from xml.etree import ElementTree as ET
 
 import httpx
 
 from app.schemas import BriefPaper, DailyBriefResponse, DigestGenerationResponse
+from app.services.digest_store import load_digest, save_digest
 
-ARXIV_API_URL = "http://export.arxiv.org/api/query"
+ARXIV_API_URL = "https://export.arxiv.org/api/query"
 ARXIV_QUERY = "cat:cs.AI OR cat:cs.LG OR cat:cs.CL OR cat:cs.CV OR cat:cs.RO"
 ARXIV_FETCH_LIMIT = 12
 DEFAULT_TOPICS = ["llms", "evaluation", "inference"]
@@ -53,8 +55,65 @@ class ArxivEntry:
     title: str
 
 
-def get_today_brief(topics: list[str] | None = None) -> DailyBriefResponse:
-    selected_topics = topics or DEFAULT_TOPICS
+def get_today_brief(
+    topics: list[str] | None = None,
+    *,
+    digest_size: int = 5,
+    storage_dir: Path | None = None,
+) -> DailyBriefResponse:
+    return _get_or_build_digest(
+        topics=topics,
+        digest_size=digest_size,
+        storage_dir=storage_dir,
+    )
+
+
+def queue_digest_generation(
+    topics: list[str] | None = None,
+    *,
+    digest_size: int = 5,
+    storage_dir: Path | None = None,
+) -> DigestGenerationResponse:
+    digest = _build_digest(
+        selected_topics=_normalize_topics(topics),
+        digest_size=digest_size,
+        storage_dir=storage_dir,
+    )
+
+    return DigestGenerationResponse(
+        digest_date=digest.digest_date,
+        message="Digest generated and persisted.",
+        status="generated",
+    )
+
+
+def _get_or_build_digest(
+    topics: list[str] | None,
+    *,
+    digest_size: int,
+    storage_dir: Path | None,
+) -> DailyBriefResponse:
+    selected_topics = _normalize_topics(topics)
+    digest_date = datetime.now(UTC).date().isoformat()
+
+    if storage_dir is not None:
+        cached_digest = load_digest(storage_dir, digest_date, selected_topics)
+        if cached_digest is not None:
+            return cached_digest
+
+    return _build_digest(
+        selected_topics=selected_topics,
+        digest_size=digest_size,
+        storage_dir=storage_dir,
+    )
+
+
+def _build_digest(
+    *,
+    selected_topics: list[str],
+    digest_size: int,
+    storage_dir: Path | None,
+) -> DailyBriefResponse:
     generated_at = datetime.now(UTC).replace(microsecond=0)
 
     try:
@@ -66,30 +125,25 @@ def get_today_brief(topics: list[str] | None = None) -> DailyBriefResponse:
         entries,
         key=lambda entry: _score_entry(entry, selected_topics),
         reverse=True,
-    )[:5]
+    )[:digest_size]
 
     if not ranked_entries:
         raise BriefServiceError("No recent arXiv entries were available for digest assembly.")
 
-    papers = [
-        _to_brief_paper(entry, rank=index + 1)
-        for index, entry in enumerate(ranked_entries)
-    ]
-
-    return DailyBriefResponse(
+    digest = DailyBriefResponse(
         digest_date=generated_at.date().isoformat(),
         generated_at=generated_at.isoformat(),
-        papers=papers,
+        papers=[
+            _to_brief_paper(entry, rank=index + 1)
+            for index, entry in enumerate(ranked_entries)
+        ],
         topics=selected_topics,
     )
 
+    if storage_dir is not None:
+        return save_digest(storage_dir, digest)
 
-def queue_digest_generation() -> DigestGenerationResponse:
-    return DigestGenerationResponse(
-        digest_date=datetime.now(UTC).date().isoformat(),
-        message="Digest generation has been queued.",
-        status="queued",
-    )
+    return digest
 
 
 def _fetch_recent_entries() -> list[ArxivEntry]:
@@ -140,6 +194,22 @@ def _fetch_recent_entries() -> list[ArxivEntry]:
         )
 
     return entries
+
+
+def _normalize_topics(topics: list[str] | None) -> list[str]:
+    if not topics:
+        return DEFAULT_TOPICS
+
+    normalized = {
+        topic.strip().lower()
+        for topic in topics
+        if topic and topic.strip().lower() in TOPIC_KEYWORDS
+    }
+
+    if not normalized:
+        return DEFAULT_TOPICS
+
+    return [topic for topic in TOPIC_KEYWORDS if topic in normalized]
 
 
 def _score_entry(entry: ArxivEntry, selected_topics: list[str]) -> tuple[int, int, str]:

@@ -9,14 +9,20 @@ import { Paper, TopicKey } from '../types';
 
 export function DailyBriefScreen({
   digestDateLabel,
+  errorMessage,
+  isLoading,
   onOpenPaper,
+  onRefresh,
   onToggleSave,
   papers,
   savedPaperIds,
   selectedTopics,
 }: {
   digestDateLabel: string;
+  errorMessage: string | null;
+  isLoading: boolean;
   onOpenPaper: (paperId: string) => void;
+  onRefresh: () => void;
   onToggleSave: (paperId: string) => void;
   papers: Paper[];
   savedPaperIds: string[];
@@ -34,7 +40,7 @@ export function DailyBriefScreen({
             <Pressable style={styles.iconButton}>
               <Feather color={colors.text} name="bell" size={18} />
             </Pressable>
-            <Pressable style={styles.iconButton}>
+            <Pressable onPress={onRefresh} style={styles.iconButton}>
               <Feather color={colors.text} name="refresh-cw" size={18} />
             </Pressable>
           </View>
@@ -53,21 +59,45 @@ export function DailyBriefScreen({
 
         <View style={styles.digestMetaPanel}>
           <Text style={styles.digestMetaTitle}>Top five papers</Text>
-          <Text style={styles.digestMetaCopy}>Fast summaries first, full details one tap away.</Text>
+          <Text style={styles.digestMetaCopy}>
+            {isLoading
+              ? 'Refreshing the latest persisted brief from the backend.'
+              : 'Fast summaries first, full details one tap away.'}
+          </Text>
         </View>
 
-        <View style={styles.cardsWrap}>
-          {papers.map((paper, index) => (
-            <PaperCard
-              isSaved={savedPaperIds.includes(paper.id)}
-              key={paper.id}
-              onOpen={() => onOpenPaper(paper.id)}
-              onToggleSave={() => onToggleSave(paper.id)}
-              paper={paper}
-              rank={index + 1}
-            />
-          ))}
-        </View>
+        {errorMessage ? (
+          <View style={[styles.statePanel, styles.errorPanel]}>
+            <Text style={styles.stateTitle}>We couldn&apos;t load today&apos;s brief.</Text>
+            <Text style={styles.stateCopy}>{errorMessage}</Text>
+            <Pressable onPress={onRefresh} style={styles.stateAction}>
+              <Text style={styles.stateActionLabel}>Retry</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {!errorMessage && papers.length === 0 ? (
+          <View style={styles.statePanel}>
+            <Text style={styles.stateTitle}>Today&apos;s brief is still being prepared.</Text>
+            <Text style={styles.stateCopy}>Check back shortly or refresh to request a fresh digest.</Text>
+            <Pressable onPress={onRefresh} style={styles.stateAction}>
+              <Text style={styles.stateActionLabel}>Refresh</Text>
+            </Pressable>
+          </View>
+        ) : (
+          <View style={styles.cardsWrap}>
+            {papers.map((paper) => (
+              <PaperCard
+                isSaved={savedPaperIds.includes(paper.id)}
+                key={paper.id}
+                onOpen={() => onOpenPaper(paper.id)}
+                onToggleSave={() => onToggleSave(paper.id)}
+                paper={paper}
+                rank={paper.rank}
+              />
+            ))}
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
@@ -98,6 +128,9 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginTop: 24,
     padding: 18,
+  },
+  errorPanel: {
+    backgroundColor: colors.dangerSoft,
   },
   digestMetaTitle: {
     color: colors.text,
@@ -141,6 +174,39 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 12,
     maxWidth: '92%',
+  },
+  stateAction: {
+    alignSelf: 'flex-start',
+    backgroundColor: colors.text,
+    borderRadius: 999,
+    marginTop: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  stateActionLabel: {
+    color: '#fff',
+    fontFamily: fontFamilies.medium,
+    fontSize: 13,
+  },
+  stateCopy: {
+    color: colors.mutedText,
+    fontFamily: fontFamilies.body,
+    fontSize: 15,
+    lineHeight: 22,
+    marginTop: 8,
+  },
+  statePanel: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginTop: 20,
+    padding: 18,
+  },
+  stateTitle: {
+    color: colors.text,
+    fontFamily: fontFamilies.serif,
+    fontSize: 24,
   },
   title: {
     color: colors.text,

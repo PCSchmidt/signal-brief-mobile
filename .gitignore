@@ -10,6 +10,7 @@ coverage.xml
 backend/.venv/
 backend/.mypy_cache/
 backend/.ruff_cache/
+backend/data/digests/
 
 mobile/.expo/
 mobile/dist/

@@ -22,7 +22,7 @@ export function PaperDetailScreen({
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.missingWrap}>
           <Text style={styles.missingTitle}>Paper not found</Text>
-          <Text style={styles.missingCopy}>The selected paper could not be loaded from the mock dataset.</Text>
+          <Text style={styles.missingCopy}>The selected paper could not be loaded from the current digest.</Text>
           <Pressable onPress={onBack} style={styles.primaryAction}>
             <Text style={styles.primaryActionLabel}>Go back</Text>
           </Pressable>

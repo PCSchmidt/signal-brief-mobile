@@ -23,11 +23,18 @@ export type Paper = {
   authors: string;
   id: string;
   publishedAt: string;
-  score: number;
+  rank: number;
   summaryBullets: string[];
   tags: TopicKey[];
   title: string;
   whyItMatters: string[];
+};
+
+export type DailyBrief = {
+  digestDate: string;
+  generatedAt: string;
+  papers: Paper[];
+  topics: TopicKey[];
 };
 
 export type RootStackParamList = {

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from pathlib import Path
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
 from app.schemas import (
     DailyBriefResponse,
@@ -24,9 +26,16 @@ def health(settings: Settings = Depends(get_settings)) -> HealthResponse:
 
 
 @router.get("/brief/today", response_model=DailyBriefResponse)
-def brief_today() -> DailyBriefResponse:
+def brief_today(
+    topics: list[str] | None = Query(default=None),
+    settings: Settings = Depends(get_settings),
+) -> DailyBriefResponse:
     try:
-        return get_today_brief()
+        return get_today_brief(
+            topics=topics,
+            digest_size=settings.digest_size,
+            storage_dir=Path(settings.digest_storage_dir),
+        )
     except BriefServiceError as exc:
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
@@ -52,6 +61,7 @@ def register_push_token(payload: PushTokenRegistrationRequest) -> PushTokenRegis
 @router.post("/jobs/generate-digest", response_model=DigestGenerationResponse)
 def generate_digest(
     x_internal_token: str | None = Header(default=None),
+    topics: list[str] | None = Query(default=None),
     settings: Settings = Depends(get_settings),
 ) -> DigestGenerationResponse:
     if x_internal_token != settings.internal_job_token:
@@ -60,4 +70,8 @@ def generate_digest(
             detail="Missing or invalid internal job token.",
         )
 
-    return queue_digest_generation()
+    return queue_digest_generation(
+        topics=topics,
+        digest_size=settings.digest_size,
+        storage_dir=Path(settings.digest_storage_dir),
+    )

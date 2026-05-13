@@ -1,10 +1,13 @@
+from pathlib import Path
+
 import respx
-from httpx import Response
 from fastapi.testclient import TestClient
+from httpx import Response
 
 from app.main import app
+from app.settings import Settings, get_settings
 
-ARXIV_API_URL = "http://export.arxiv.org/api/query"
+ARXIV_API_URL = "https://export.arxiv.org/api/query"
 
 ARXIV_FEED = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -65,29 +68,64 @@ ARXIV_FEED = """<?xml version="1.0" encoding="UTF-8"?>
 client = TestClient(app)
 
 
-def test_brief_today_returns_five_ranked_papers() -> None:
+def _override_settings(tmp_path: Path):
+    def _build_settings() -> Settings:
+        return Settings(digest_storage_dir=tmp_path, internal_job_token="signal-brief-local-token")
+
+    return _build_settings
+
+
+def test_brief_today_returns_five_ranked_papers(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
     with respx.mock(assert_all_called=True) as respx_mock:
         respx_mock.get(ARXIV_API_URL).mock(return_value=Response(200, text=ARXIV_FEED))
-        response = client.get("/brief/today")
+        response = client.get(
+            "/brief/today",
+            params=[("topics", "llms"), ("topics", "evaluation"), ("topics", "inference")],
+        )
+
+    app.dependency_overrides.clear()
 
     assert response.status_code == 200
 
     payload = response.json()
 
     assert payload["digest_date"]
-    assert payload["topics"] == ["llms", "evaluation", "inference"]
+    assert payload["topics"] == ["evaluation", "inference", "llms"]
     assert len(payload["papers"]) == 5
     assert payload["papers"][0]["id"] == "2505.00001v1"
     assert payload["papers"][0]["rank"] == 1
     assert payload["papers"][4]["rank"] == 5
     assert payload["papers"][0]["tags"] == ["inference", "llms", "optimization"]
     assert payload["papers"][0]["summary_bullets"]
+    assert list(tmp_path.glob("*.json"))
 
 
-def test_brief_today_returns_bad_gateway_when_arxiv_fails() -> None:
+def test_brief_today_uses_persisted_digest_on_second_request(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
+    with respx.mock(assert_all_called=True) as respx_mock:
+        respx_mock.get(ARXIV_API_URL).mock(return_value=Response(200, text=ARXIV_FEED))
+        first_response = client.get("/brief/today", params=[("topics", "llms"), ("topics", "evaluation")])
+
+    second_response = client.get("/brief/today", params=[("topics", "evaluation"), ("topics", "llms")])
+
+    app.dependency_overrides.clear()
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert first_response.json()["papers"][0]["id"] == second_response.json()["papers"][0]["id"]
+
+
+def test_brief_today_returns_bad_gateway_when_arxiv_fails(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
     with respx.mock(assert_all_called=True) as respx_mock:
         respx_mock.get(ARXIV_API_URL).mock(return_value=Response(503, text="unavailable"))
         response = client.get("/brief/today")
+
+    app.dependency_overrides.clear()
 
     assert response.status_code == 502
     assert response.json()["detail"] == "Unable to assemble today's brief from arXiv."
@@ -98,6 +136,24 @@ def test_generate_digest_requires_internal_token() -> None:
 
     assert response.status_code == 401
     assert response.json()["detail"] == "Missing or invalid internal job token."
+
+
+def test_generate_digest_persists_requested_topics(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
+    with respx.mock(assert_all_called=True) as respx_mock:
+        respx_mock.get(ARXIV_API_URL).mock(return_value=Response(200, text=ARXIV_FEED))
+        response = client.post(
+            "/jobs/generate-digest",
+            params=[("topics", "llms"), ("topics", "evaluation")],
+            headers={"x-internal-token": "signal-brief-local-token"},
+        )
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "generated"
+    assert list(tmp_path.glob("*.json"))
 
 
 def test_register_push_token_accepts_payload() -> None:
