@@ -1,0 +1,15 @@
+.DS_Store
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+.pytest_cache/
+.coverage
+coverage.xml
+
+backend/.venv/
+backend/.mypy_cache/
+backend/.ruff_cache/
+
+mobile/.expo/
+mobile/dist/
