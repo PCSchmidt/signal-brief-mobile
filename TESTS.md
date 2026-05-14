@@ -31,9 +31,9 @@ Define the minimum test strategy that keeps the prototype honest while still let
 
 - Backend API tests are implemented and passing with `pytest`.
 - Mobile screen tests are started with Jest and React Native Testing Library.
-- A stable Playwright web smoke test exists at `mobile/playwright/critical-path.spec.ts` and is passing locally.
+- Stable Playwright web smoke tests exist at `mobile/playwright/critical-path.spec.ts` and are passing locally for the critical path, settings topic editing, and digest-error recovery.
 - The first Maestro smoke flow still exists at `mobile/.maestro/critical-path.web.yaml`, but it remains limited by Chromium web beta behavior.
-- Native-device Maestro coverage is still pending.
+- A first Android Maestro flow now exists at `mobile/.maestro/critical-path.android.yaml`, but it has not been executed on this machine because Android SDK tools are missing.
 
 ## Coverage Targets
 
@@ -131,7 +131,7 @@ Status: complete for the current backend surface.
 - Run the full backend test suite with coverage
 - Run the Maestro smoke flows on at least one real device path or stable emulator path
 
-Status: in progress. Backend tests, the first mobile/Jest slice, and a passing Playwright web smoke slice are in place, but real-device Maestro coverage is not done yet.
+Status: in progress. Backend tests, the first mobile/Jest slice, and passing Playwright web smoke slices are in place, but real-device Maestro coverage is not done yet.
 
 ## Approval Bar
 

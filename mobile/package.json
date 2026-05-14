@@ -7,6 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest",
+    "test:maestro:android": "maestro test .maestro/critical-path.android.yaml",
     "test:maestro:web": "maestro test .maestro/critical-path.web.yaml",
     "test:playwright:web": "playwright test",
     "web": "expo start --web",

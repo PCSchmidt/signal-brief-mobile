@@ -1,0 +1,48 @@
+appId: host.exp.exponent
+env:
+  EXPO_DEEPLINK: ${EXPO_DEEPLINK || "exp://10.0.2.2:8081"}
+---
+- launchApp:
+    appId: host.exp.exponent
+    clearState: true
+- openLink: ${EXPO_DEEPLINK}
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- assertVisible: "Daily setup"
+- assertVisible: "Build your brief"
+- tapOn: "Continue"
+- assertVisible: "A compact scan of what matters today"
+- assertVisible: "Top five papers"
+- tapOn:
+    text: "^Open$"
+    index: 0
+- assertVisible: "Why it matters"
+- assertVisible: "Abstract snapshot"
+- tapOn: "Back"
+- tapOn:
+    text: "^Save$"
+    index: 0
+- tapOn:
+    text: "^Saved$"
+    index: 1
+- assertVisible: "Papers worth revisiting"
+- assertNotVisible: "No saved papers yet"
+- assertVisible: "Remove"
+- launchApp:
+    appId: host.exp.exponent
+    stopApp: true
+- openLink: ${EXPO_DEEPLINK}
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"
+- assertNotVisible: "Daily setup"
+- tapOn:
+    text: "^Saved$"
+    index: 1
+- assertVisible: "Papers worth revisiting"
+- assertNotVisible: "No saved papers yet"

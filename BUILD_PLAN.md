@@ -10,7 +10,7 @@ Move from empty repo to a public prototype in a controlled sequence that proves 
 - The FastAPI backend is live with arXiv ingestion, digest persistence, startup warmup, and topic-aware brief generation.
 - The mobile app is connected to the live `/brief/today` endpoint.
 - Local persistence for saved items and topic preferences is implemented.
-- Backend `pytest`, mobile Jest coverage for the brief screen, and a passing Playwright web smoke flow are in place.
+- Backend `pytest`, mobile Jest coverage for the brief screen, and passing Playwright web smoke flows are in place.
 
 ## Phase 1: Planning And Boundaries
 
@@ -45,7 +45,7 @@ Current status:
 - Live digest endpoints connected
 - Local topic and save persistence complete
 - Push token registration is still a placeholder
-- Expo web smoke coverage added through Playwright; native device smoke coverage still pending
+- Expo web smoke coverage added through Playwright; native device smoke coverage still pending, with an Android Maestro flow prepared but not executed on this machine
 
 ## Phase 5: Release Hardening
 
