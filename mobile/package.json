@@ -8,6 +8,7 @@
     "ios": "expo start --ios",
     "test": "jest",
     "test:maestro:web": "maestro test .maestro/critical-path.web.yaml",
+    "test:playwright:web": "playwright test",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit"
   },
@@ -31,6 +32,7 @@
     "react-native-web": "^0.21.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/jest": "~29.5.14",

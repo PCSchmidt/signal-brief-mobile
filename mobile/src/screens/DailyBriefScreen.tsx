@@ -40,7 +40,7 @@ export function DailyBriefScreen({
             <Pressable style={styles.iconButton}>
               <Feather color={colors.text} name="bell" size={18} />
             </Pressable>
-            <Pressable onPress={onRefresh} style={styles.iconButton}>
+            <Pressable accessibilityLabel="Refresh brief" onPress={onRefresh} style={styles.iconButton}>
               <Feather color={colors.text} name="refresh-cw" size={18} />
             </Pressable>
           </View>

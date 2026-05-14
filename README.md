@@ -9,7 +9,8 @@ Mobile app that turns selected technical sources into a daily briefing with conc
 - The backend ingests arXiv data live, ranks papers for the selected topics, persists digests by date and topic set, and warms the default digest on startup.
 - Backend API coverage is in place with `pytest`.
 - Mobile screen coverage is started with Jest and React Native Testing Library.
-- A first Maestro smoke flow exists for the critical path on Expo web, but the current blocker is Maestro Chromium web beta interaction reliability.
+- A stable Playwright web smoke test now covers the critical path on Expo web.
+- The older Maestro Expo web flow still exists, but it remains limited by Maestro Chromium web beta interaction reliability.
 
 ## Session Handoff
 
@@ -28,7 +29,9 @@ Mobile app that turns selected technical sources into a daily briefing with conc
 
 ## Smoke Test
 
-The first Maestro smoke flow lives at `mobile/.maestro/critical-path.web.yaml`.
+The preferred web smoke test lives at `mobile/playwright/critical-path.spec.ts` and runs through Playwright.
+
+The earlier Maestro experiment remains at `mobile/.maestro/critical-path.web.yaml`.
 
 It covers the current critical path:
 
@@ -39,16 +42,16 @@ It covers the current critical path:
 
 To run it locally:
 
-1. Start the backend on port `8000` from `backend/`.
-2. Start Expo web on port `19006` from `mobile/`.
-3. Install the Maestro CLI if it is not already available.
-4. Run `npm run test:maestro:web` from `mobile/`.
+1. Run `npm run test:playwright:web` from `mobile/`.
 
-The flow currently targets the Expo web runtime at `http://127.0.0.1:19006/` so it can be exercised without a native dev build, but the current interaction blocker appears to be in Maestro Chromium web beta rather than in the app data flow.
+The Playwright config starts the backend on `8000` and Expo web on `19006` automatically when needed, then runs the same onboarding, detail, save, and reload-persistence path through the browser.
+
+The Maestro flow still targets the Expo web runtime at `http://127.0.0.1:19006/`, but it should now be treated as an experimental path rather than the primary web smoke runner.
 
 ## Current Validation Commands
 
 - Backend tests: `cd backend && ..\\..\\.venv\\Scripts\\python.exe -m pytest`
 - Mobile typecheck: `cd mobile && npm run typecheck`
 - Mobile Jest tests: `cd mobile && npm test -- DailyBriefScreen --runInBand`
+- Playwright web smoke flow: `cd mobile && npm run test:playwright:web`
 - Maestro web smoke flow: `cd mobile && npm run test:maestro:web`

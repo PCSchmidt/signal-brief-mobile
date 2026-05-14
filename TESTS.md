@@ -24,15 +24,16 @@ Define the minimum test strategy that keeps the prototype honest while still let
 
 ### End-To-End
 
-- Runner: Maestro
-- Why this choice: easier to stand up than Detox for a solo project, works well for cross-platform mobile smoke flows, and is sufficient for a prototype that needs real-device confidence more than exhaustive native automation.
+- Runner: Playwright for Expo web smoke coverage, Maestro for native-device smoke coverage
+- Why this choice: Playwright is the stable fit for the current Expo web validation path, while Maestro remains useful for the native-device smoke coverage this prototype still needs before release.
 
 ## Current Test Status
 
 - Backend API tests are implemented and passing with `pytest`.
 - Mobile screen tests are started with Jest and React Native Testing Library.
-- The first Maestro smoke flow exists at `mobile/.maestro/critical-path.web.yaml`.
-- Native-device Maestro coverage is still pending; the current smoke flow targets Expo web.
+- A stable Playwright web smoke test exists at `mobile/playwright/critical-path.spec.ts` and is passing locally.
+- The first Maestro smoke flow still exists at `mobile/.maestro/critical-path.web.yaml`, but it remains limited by Chromium web beta behavior.
+- Native-device Maestro coverage is still pending.
 
 ## Coverage Targets
 
@@ -130,7 +131,7 @@ Status: complete for the current backend surface.
 - Run the full backend test suite with coverage
 - Run the Maestro smoke flows on at least one real device path or stable emulator path
 
-Status: in progress. Backend tests and the first mobile/Jest and Maestro smoke slices are in place, but real-device Maestro coverage is not done yet.
+Status: in progress. Backend tests, the first mobile/Jest slice, and a passing Playwright web smoke slice are in place, but real-device Maestro coverage is not done yet.
 
 ## Approval Bar
 
