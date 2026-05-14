@@ -11,6 +11,7 @@ backend/.venv/
 backend/.mypy_cache/
 backend/.ruff_cache/
 backend/data/digests/
+backend/data/device-preferences/
 
 mobile/.expo/
 mobile/dist/

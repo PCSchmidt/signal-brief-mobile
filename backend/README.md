@@ -6,9 +6,12 @@ FastAPI backend for Signal Brief Mobile.
 
 - Health endpoint
 - Daily brief endpoint backed by live arXiv ingestion and persisted digest assembly
-- Push token registration placeholder
+- Push token registration with file-backed device preference persistence
+- Internal device-preference read endpoint for local debugging
 - Internal digest generation endpoint
 - Startup warmup of the default digest
+
+Current notification scope is registration only. Delivery credentials and outbound send jobs are intentionally deferred to a later slice.
 
 ## Local Run
 

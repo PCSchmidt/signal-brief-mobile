@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     app_version: str = "0.1.0"
     digest_size: int = 5
     digest_storage_dir: Path = Path("data/digests")
+    device_preferences_storage_dir: Path = Path("data/device-preferences")
     internal_job_token: str = "signal-brief-local-token"
     warm_digest_on_startup: bool = True
 

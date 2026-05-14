@@ -16,7 +16,9 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     storage_dir = Path(settings.digest_storage_dir)
+    device_preferences_dir = Path(settings.device_preferences_storage_dir)
     storage_dir.mkdir(parents=True, exist_ok=True)
+    device_preferences_dir.mkdir(parents=True, exist_ok=True)
 
     if settings.warm_digest_on_startup:
         try:

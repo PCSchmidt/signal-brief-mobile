@@ -2,18 +2,15 @@ appId: host.exp.exponent
 env:
   EXPO_DEEPLINK: ${EXPO_DEEPLINK || "exp://10.0.2.2:8081"}
 ---
-- launchApp:
-    appId: host.exp.exponent
-    clearState: true
-- openLink: ${EXPO_DEEPLINK}
 - runFlow:
-    when:
-      visible: "Open"
-    commands:
-      - tapOn: "Open"
+    file: subflows/open-expo-link.android.yaml
+    env:
+      EXPO_DEEPLINK: ${EXPO_DEEPLINK}
 - assertVisible: "Daily setup"
 - assertVisible: "Build your brief"
 - tapOn: "Continue"
+- runFlow:
+    file: subflows/dismiss-expo-go-overlays.android.yaml
 - assertVisible: "A compact scan of what matters today"
 - assertVisible: "Top five papers"
 - tapOn:
@@ -31,15 +28,10 @@ env:
 - assertVisible: "Papers worth revisiting"
 - assertNotVisible: "No saved papers yet"
 - assertVisible: "Remove"
-- launchApp:
-    appId: host.exp.exponent
-    stopApp: true
-- openLink: ${EXPO_DEEPLINK}
 - runFlow:
-    when:
-      visible: "Open"
-    commands:
-      - tapOn: "Open"
+    file: subflows/open-expo-link.android.yaml
+    env:
+      EXPO_DEEPLINK: ${EXPO_DEEPLINK}
 - assertNotVisible: "Daily setup"
 - tapOn:
     text: "^Saved$"

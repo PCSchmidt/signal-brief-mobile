@@ -13,7 +13,7 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Snapshot usage: limited to stable presentational subcomponents only, not full screens
 - Why this choice: Expo and React Native are most predictable with Jest-based tooling. This is lower risk than introducing a custom test runner for a mobile stack that already has enough moving parts.
 
-### Backend
+### Backend Coverage
 
 - Runner: `pytest`
 - Async support: `pytest-asyncio`
@@ -22,10 +22,10 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Coverage: `pytest-cov`
 - Why this choice: this is the standard, low-friction Python path for FastAPI services and scheduled jobs.
 
-### End-To-End
+### End-To-End Coverage
 
 - Runner: Playwright for Expo web smoke coverage, Maestro for native-device smoke coverage
-- Why this choice: Playwright is the stable fit for the current Expo web validation path, while Maestro remains useful for the native-device smoke coverage this prototype still needs before release.
+- Why this choice: Playwright is the stable fit for the current Expo web validation path, while Maestro now covers a validated Android emulator smoke path that exercises the real mobile runtime.
 
 ## Current Test Status
 
@@ -33,7 +33,11 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Mobile screen tests are started with Jest and React Native Testing Library.
 - Stable Playwright web smoke tests exist at `mobile/playwright/critical-path.spec.ts` and are passing locally for the critical path, settings topic editing, and digest-error recovery.
 - The first Maestro smoke flow still exists at `mobile/.maestro/critical-path.web.yaml`, but it remains limited by Chromium web beta behavior.
-- A first Android Maestro flow now exists at `mobile/.maestro/critical-path.android.yaml`, but it has not been executed on this machine because Android SDK tools are missing.
+- The Android Maestro flow at `mobile/.maestro/critical-path.android.yaml` is now passing locally on an Android emulator with Expo Go when `EXPO_DEEPLINK` is set to the active Expo host; repeated Expo Go setup steps have been extracted into subflows for easier maintenance.
+- Push-token registration is implemented and covered in backend API tests, but end-to-end notification delivery is not yet automated.
+- An internal device-preference read endpoint is now covered in backend API tests for local notification-debug workflows.
+- The repo is configured for a dev-client migration, but the stable-app-id Android smoke path is not yet the validated source of truth.
+- The current dev-client build blocker is a Windows path-length failure during native CMake codegen, not an app-level TypeScript or backend test regression.
 
 ## Coverage Targets
 
@@ -131,7 +135,7 @@ Status: complete for the current backend surface.
 - Run the full backend test suite with coverage
 - Run the Maestro smoke flows on at least one real device path or stable emulator path
 
-Status: in progress. Backend tests, the first mobile/Jest slice, and passing Playwright web smoke slices are in place, but real-device Maestro coverage is not done yet.
+Status: in progress. Backend tests, the first mobile/Jest slice, passing Playwright web smoke slices, and a passing Android emulator Maestro smoke slice are in place; broader real-device coverage is still open.
 
 ## Approval Bar
 

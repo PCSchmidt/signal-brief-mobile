@@ -23,6 +23,10 @@ import { SavedScreen } from './src/screens/SavedScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { loadPersistedAppState, savePersistedAppState } from './src/services/appStorage';
+import {
+  PushRegistrationStatus,
+  syncPushNotificationPreference,
+} from './src/services/pushNotifications';
 import { TopicOnboardingScreen } from './src/screens/TopicOnboardingScreen';
 import { fetchTodayBrief } from './src/services/briefApi';
 import { colors, navigationTheme } from './src/theme';
@@ -37,7 +41,10 @@ function MainTabs({
   briefError,
   digestDateLabel,
   digestPapers,
+  isSyncingNotifications,
   isRefreshing,
+  notificationStatusMessage,
+  notificationStatusKind,
   papersById,
   savedPaperIds,
   selectedTopics,
@@ -51,7 +58,10 @@ function MainTabs({
   briefError: string | null;
   digestDateLabel: string;
   digestPapers: Paper[];
+  isSyncingNotifications: boolean;
   isRefreshing: boolean;
+  notificationStatusMessage: string | null;
+  notificationStatusKind: PushRegistrationStatus | null;
   papersById: Map<string, Paper>;
   savedPaperIds: string[];
   selectedTopics: TopicKey[];
@@ -122,6 +132,9 @@ function MainTabs({
       <Tab.Screen name="Settings">
         {() => (
           <SettingsScreen
+            isSyncingNotifications={isSyncingNotifications}
+            notificationStatusMessage={notificationStatusMessage}
+            notificationStatusKind={notificationStatusKind}
             notificationsEnabled={notificationsEnabled}
             onEditTopics={onEditTopics}
             onToggleNotifications={onToggleNotifications}
@@ -143,10 +156,14 @@ export default function App() {
   });
   const [hasHydratedState, setHasHydratedState] = useState(false);
   const [isBooting, setIsBooting] = useState(true);
+  const [deviceId, setDeviceId] = useState('');
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [selectedTopics, setSelectedTopics] = useState<TopicKey[]>(DEFAULT_TOPICS);
   const [savedPaperIds, setSavedPaperIds] = useState<string[]>([]);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [isSyncingNotifications, setIsSyncingNotifications] = useState(false);
+  const [notificationStatusMessage, setNotificationStatusMessage] = useState<string | null>(null);
+  const [notificationStatusKind, setNotificationStatusKind] = useState<PushRegistrationStatus | null>(null);
   const [dailyBrief, setDailyBrief] = useState<DailyBrief | null>(null);
   const [paperCache, setPaperCache] = useState<Record<string, Paper>>({});
   const [briefError, setBriefError] = useState<string | null>(null);
@@ -172,9 +189,14 @@ export default function App() {
         const persistedState = await loadPersistedAppState();
 
         if (!isMounted || !persistedState) {
+          if (isMounted) {
+            setDeviceId(createDeviceId());
+          }
+
           return;
         }
 
+        setDeviceId(persistedState.deviceId || createDeviceId());
         setHasCompletedOnboarding(persistedState.hasCompletedOnboarding);
         setNotificationsEnabled(persistedState.notificationsEnabled);
         setPaperCache(
@@ -204,6 +226,7 @@ export default function App() {
     }
 
     void savePersistedAppState({
+      deviceId,
       hasCompletedOnboarding,
       notificationsEnabled,
       paperCache: Object.values(paperCache),
@@ -211,6 +234,7 @@ export default function App() {
       selectedTopics,
     });
   }, [
+    deviceId,
     hasCompletedOnboarding,
     hasHydratedState,
     notificationsEnabled,
@@ -218,6 +242,58 @@ export default function App() {
     savedPaperIds,
     selectedTopics,
   ]);
+
+  useEffect(() => {
+    if (!hasHydratedState || !hasCompletedOnboarding || !deviceId) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    async function syncNotifications() {
+      if (!isCancelled) {
+        setIsSyncingNotifications(true);
+        setNotificationStatusKind('info');
+        setNotificationStatusMessage(
+          notificationsEnabled
+            ? 'Saving notification settings for this device.'
+            : 'Turning off notifications for this device.'
+        );
+      }
+
+      try {
+        const result = await syncPushNotificationPreference({
+          deviceId,
+          notificationsEnabled,
+          selectedTopics,
+        });
+
+        if (!isCancelled) {
+          setNotificationStatusKind(result.status);
+          setNotificationStatusMessage(result.message);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setNotificationStatusKind('error');
+          setNotificationStatusMessage(
+            error instanceof Error
+              ? `Unable to sync notifications: ${error.message}`
+              : 'Unable to sync notifications for this device.'
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSyncingNotifications(false);
+        }
+      }
+    }
+
+    void syncNotifications();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [deviceId, hasCompletedOnboarding, hasHydratedState, notificationsEnabled, selectedTopics]);
 
   const refreshBrief = async () => {
     setIsRefreshing(true);
@@ -321,7 +397,10 @@ export default function App() {
                 briefError={briefError}
                 digestDateLabel={digestDateLabel}
                 digestPapers={digestPapers}
+                isSyncingNotifications={isSyncingNotifications}
                 isRefreshing={isRefreshing}
+                notificationStatusMessage={notificationStatusMessage}
+                notificationStatusKind={notificationStatusKind}
                 notificationsEnabled={notificationsEnabled}
                 onEditTopics={() => navigation.navigate('Onboarding', { mode: 'edit' })}
                 onOpenPaper={(paperId) => navigation.navigate('PaperDetail', { paperId })}
@@ -351,4 +430,8 @@ export default function App() {
       </NavigationContainer>
     </SafeAreaProvider>
   );
+}
+
+function createDeviceId(): string {
+  return `device-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }

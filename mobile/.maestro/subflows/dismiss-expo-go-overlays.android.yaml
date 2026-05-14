@@ -1,0 +1,17 @@
+appId: host.exp.exponent
+---
+- runFlow:
+    when:
+      visible: "Got it"
+    commands:
+      - tapOn: "Got it"
+- runFlow:
+    when:
+      visible: "This is the developer menu. It gives you access to useful tools in Expo Go."
+    commands:
+      - tapOn: "Continue"
+- runFlow:
+    when:
+      visible: "Maybe later"
+    commands:
+      - tapOn: "Maybe later"

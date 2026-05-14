@@ -2,20 +2,29 @@ import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 
+import { PushRegistrationStatus } from '../services/pushNotifications';
 import { colors, fontFamilies } from '../theme';
 import { TopicKey } from '../types';
 
 export function SettingsScreen({
+  isSyncingNotifications,
+  notificationStatusMessage,
+  notificationStatusKind,
   notificationsEnabled,
   onEditTopics,
   onToggleNotifications,
   selectedTopics,
 }: {
+  isSyncingNotifications: boolean;
+  notificationStatusMessage: string | null;
+  notificationStatusKind: PushRegistrationStatus | null;
   notificationsEnabled: boolean;
   onEditTopics: () => void;
   onToggleNotifications: () => void;
   selectedTopics: TopicKey[];
 }) {
+  const statusStyle = getStatusStyle(notificationStatusKind);
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.content}>
@@ -41,9 +50,16 @@ export function SettingsScreen({
               <View>
                 <Text style={styles.panelTitle}>Daily brief ready</Text>
                 <Text style={styles.panelCopy}>Notify me when today&apos;s digest is available.</Text>
+                {notificationStatusMessage ? (
+                  <Text style={[styles.statusCopy, statusStyle]}>
+                    {isSyncingNotifications ? 'Syncing. ' : ''}
+                    {notificationStatusMessage}
+                  </Text>
+                ) : null}
               </View>
             </View>
             <Switch
+              disabled={isSyncingNotifications}
               onValueChange={onToggleNotifications}
               thumbColor="#fff"
               trackColor={{ false: '#c8c1b1', true: colors.teal }}
@@ -119,6 +135,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     flex: 1,
   },
+  statusCopy: {
+    color: colors.text,
+    fontFamily: fontFamilies.medium,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: 8,
+  },
   sectionLabel: {
     color: colors.teal,
     fontFamily: fontFamilies.semibold,
@@ -135,3 +158,19 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 });
+
+function getStatusStyle(status: PushRegistrationStatus | null) {
+  if (status === 'success') {
+    return { color: colors.teal };
+  }
+
+  if (status === 'warning') {
+    return { color: '#9a6700' };
+  }
+
+  if (status === 'error') {
+    return { color: '#b42318' };
+  }
+
+  return { color: colors.text };
+}

@@ -20,6 +20,7 @@ const VALID_TOPICS: TopicKey[] = [
 ];
 
 export type PersistedAppState = {
+  deviceId: string;
   hasCompletedOnboarding: boolean;
   notificationsEnabled: boolean;
   paperCache: Paper[];
@@ -66,6 +67,7 @@ function parsePersistedState(value: unknown): PersistedAppState | null {
   }
 
   return {
+    deviceId: typeof candidate.deviceId === 'string' ? candidate.deviceId : '',
     hasCompletedOnboarding: candidate.hasCompletedOnboarding,
     notificationsEnabled: candidate.notificationsEnabled,
     paperCache: candidate.paperCache.filter(isPaper),

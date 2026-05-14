@@ -39,6 +39,7 @@ Developers and technical professionals who want to follow AI research are overwh
 - Rank papers for a topic-aware daily digest
 - Persist assembled digests by date and selected topics
 - Expose health, digest, push-token, and internal digest-generation endpoints for the mobile app
+- Persist device-level notification preferences and push tokens during the local backend stage
 - Warm the default digest on startup and fall back to read-through digest generation on cache miss
 
 ### Data And Platform
@@ -78,6 +79,7 @@ Developers and technical professionals who want to follow AI research are overwh
 - `GET /health`
 - `GET /brief/today`
 - `POST /device/register-push-token`
+- `GET /device/preferences/{device_id}` for protected local debugging
 - `POST /jobs/generate-digest` for protected internal use
 
 ## High-Level Data Model

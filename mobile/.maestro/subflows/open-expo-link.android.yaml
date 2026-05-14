@@ -1,0 +1,12 @@
+appId: host.exp.exponent
+env:
+  EXPO_DEEPLINK: ${EXPO_DEEPLINK || "exp://10.0.2.2:8081"}
+---
+- openLink: ${EXPO_DEEPLINK}
+- runFlow:
+    file: dismiss-expo-go-overlays.android.yaml
+- runFlow:
+    when:
+      visible: "Open"
+    commands:
+      - tapOn: "Open"

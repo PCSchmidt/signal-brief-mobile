@@ -70,7 +70,11 @@ client = TestClient(app)
 
 def _override_settings(tmp_path: Path):
     def _build_settings() -> Settings:
-        return Settings(digest_storage_dir=tmp_path, internal_job_token="signal-brief-local-token")
+        return Settings(
+            digest_storage_dir=tmp_path / "digests",
+            device_preferences_storage_dir=tmp_path / "device-preferences",
+            internal_job_token="signal-brief-local-token",
+        )
 
     return _build_settings
 
@@ -99,7 +103,7 @@ def test_brief_today_returns_five_ranked_papers(tmp_path: Path) -> None:
     assert payload["papers"][4]["rank"] == 5
     assert payload["papers"][0]["tags"] == ["inference", "llms", "optimization"]
     assert payload["papers"][0]["summary_bullets"]
-    assert list(tmp_path.glob("*.json"))
+    assert list((tmp_path / "digests").glob("*.json"))
 
 
 def test_brief_today_uses_persisted_digest_on_second_request(tmp_path: Path) -> None:
@@ -138,6 +142,17 @@ def test_generate_digest_requires_internal_token() -> None:
     assert response.json()["detail"] == "Missing or invalid internal job token."
 
 
+def test_read_device_preferences_requires_internal_token(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
+    response = client.get("/device/preferences/device-123")
+
+    app.dependency_overrides.clear()
+
+    assert response.status_code == 401
+    assert response.json()["detail"] == "Missing or invalid internal job token."
+
+
 def test_generate_digest_persists_requested_topics(tmp_path: Path) -> None:
     app.dependency_overrides[get_settings] = _override_settings(tmp_path)
 
@@ -153,19 +168,67 @@ def test_generate_digest_persists_requested_topics(tmp_path: Path) -> None:
 
     assert response.status_code == 200
     assert response.json()["status"] == "generated"
-    assert list(tmp_path.glob("*.json"))
+    assert list((tmp_path / "digests").glob("*.json"))
 
 
 def test_register_push_token_accepts_payload() -> None:
-    response = client.post(
+    with TestClient(app) as local_client:
+        response = local_client.post(
         "/device/register-push-token",
         json={
+            "device_id": "device-123",
             "notifications_enabled": True,
             "platform": "ios",
             "push_token": "ExponentPushToken[test-token]",
             "selected_topics": ["llms", "evaluation"],
         },
+        )
+
+    assert response.status_code == 200
+    assert response.json()["registered"] is True
+
+
+def test_register_push_token_persists_and_updates_device_preferences(tmp_path: Path) -> None:
+    app.dependency_overrides[get_settings] = _override_settings(tmp_path)
+
+    first_response = client.post(
+        "/device/register-push-token",
+        json={
+            "device_id": "android-device-001",
+            "notifications_enabled": True,
+            "platform": "android",
+            "push_token": "ExponentPushToken[first-token]",
+            "selected_topics": ["evaluation", "llms"],
+        },
     )
 
-    assert response.status_code == 202
-    assert response.json()["registered"] is True
+    second_response = client.post(
+        "/device/register-push-token",
+        json={
+            "device_id": "android-device-001",
+            "notifications_enabled": False,
+            "platform": "android",
+            "push_token": None,
+            "selected_topics": ["evaluation"],
+        },
+    )
+
+    read_response = client.get(
+        "/device/preferences/android-device-001",
+        headers={"x-internal-token": "signal-brief-local-token"},
+    )
+
+    app.dependency_overrides.clear()
+
+    stored_files = list((tmp_path / "device-preferences").glob("*.json"))
+
+    assert first_response.status_code == 200
+    assert second_response.status_code == 200
+    assert read_response.status_code == 200
+    assert len(stored_files) == 1
+    assert 'disabled notification preference' in second_response.json()["message"]
+    assert read_response.json()["device_id"] == "android-device-001"
+    assert read_response.json()["notifications_enabled"] is False
+    assert read_response.json()["selected_topics"] == ["evaluation"]
+    assert '"notifications_enabled": false' in stored_files[0].read_text(encoding="utf-8")
+    assert '"selected_topics": [' in stored_files[0].read_text(encoding="utf-8")
