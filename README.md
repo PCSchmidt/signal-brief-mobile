@@ -18,6 +18,7 @@ Mobile app that turns selected technical sources into a daily briefing with conc
 - The Android Maestro flow now passes locally on an Android emulator with Expo Go when `EXPO_DEEPLINK` matches the active Expo host.
 - The repo is prepared for a dev-client migration, but the stable-app-id Android smoke path still needs final end-to-end validation.
 - The current dev-client build blocker is Windows path length during native CMake codegen for `react-native-safe-area-context` under the current repo path.
+- A new local Expo Go runtime blocker also appeared after that checkpoint: `npx expo start --android --port 8081` bundled successfully, then crashed in Metro's Windows fallback watcher with a malformed `expo-constants/android/src` `lstat` path under Node `v22.15.0`.
 
 ## Session Handoff
 
@@ -71,6 +72,8 @@ The backend now also exposes an internal device-preference read path for local d
 
 The current dev-client build attempt no longer fails on SDK setup or Gradle task selection. It now reaches native compilation and stops on a Windows path-length error inside `:app:buildCMakeDebug[arm64-v8a]`.
 
+The latest Expo Go startup attempt is no longer a clean validation command on this machine. It currently starts, launches Expo Go, bundles, and then crashes in Metro watching with an `expo-constants` path error even though `npx expo-doctor` reports `17/17 checks passed`.
+
 The Maestro flow still targets the Expo web runtime at `http://127.0.0.1:19006/`, but it should now be treated as an experimental path rather than the primary web smoke runner.
 
 ## Current Validation Commands
@@ -84,4 +87,4 @@ The Maestro flow still targets the Expo web runtime at `http://127.0.0.1:19006/`
 - Maestro Android smoke flow: `cd mobile && /c/Users/pchri/maestro/maestro/bin/maestro test -e EXPO_DEEPLINK=exp://<host>:8081 .maestro/critical-path.android.yaml`
 - Maestro web smoke flow: `cd mobile && npm run test:maestro:web`
 
-If the Android dev build still fails tomorrow, shorten the workspace path or enable Windows long paths before retrying `npm run android:dev-client -- --port 8082`.
+If Expo Go startup still fails tomorrow, retry from a shorter workspace path or a different Node LTS before assuming a source regression. If the Android dev build still fails after that, shorten the workspace path or enable Windows long paths before retrying `npm run android:dev-client -- --port 8082`.

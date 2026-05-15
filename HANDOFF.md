@@ -25,6 +25,7 @@
 - Native Android smoke coverage is now validated locally on an emulator path.
 - The old Maestro Expo web flow still reflects Chromium web beta limitations and should not be treated as the source of truth for release readiness.
 - The current concrete blocker is the local Android dev-client build on Windows: `expo run:android` now reaches native compilation but fails in `:app:buildCMakeDebug[arm64-v8a]` because the generated `react-native-safe-area-context` codegen path exceeds the Windows path-length limit under the current repo path.
+- A second local runtime blocker appeared after the checkpoint push: `npx expo start --android --port 8081` launched Expo Go, bundled successfully, then crashed in Metro's Windows fallback watcher with an `lstat` error against a malformed `expo-constants/android/src` path while running under Node `v22.15.0`.
 - The remaining hardening gaps are release-facing work such as finishing and validating the dev-client Android build, moving native automation off Expo Go, delivery credentials, notification send plumbing, and any broader real-device coverage beyond the local emulator path.
 
 ## Pick Back Up Here
@@ -35,7 +36,7 @@ Preferred next step:
 
 1. Keep Playwright as the primary Expo web smoke runner.
 2. Keep Maestro as the native Android smoke runner on the validated emulator path while Expo Go remains the native container, using `EXPO_DEEPLINK` when Expo resolves to a LAN host.
-3. Resolve the Windows path-length blocker for the Android dev build, rerun `npm run android:dev-client -- --port 8082`, then move Maestro to the stable app id instead of Expo Go.
+3. Resolve the local Windows runtime blockers in order: first retry Expo Go startup under a shorter path or a different Node LTS if the Metro watcher crash persists, then resolve the dev-client path-length blocker, rerun `npm run android:dev-client -- --port 8082`, and finally move Maestro to the stable app id instead of Expo Go.
 
 If you want to continue the current web path anyway, start with `mobile/.maestro/critical-path.web.yaml` and the paper-card actions in `mobile/src/components/PaperCard.tsx`.
 
@@ -87,12 +88,13 @@ cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && /c/Users/pch
 
 - In this environment, `/start` is available as a session-start skill.
 - Best resume prompt: `/start`
-- Then answer that you are continuing `signal-brief-mobile` at `v0.4 Prototype Hardening`, that Playwright web plus Android emulator Maestro are already validated locally, and that the immediate blocker is the Windows path-length failure in the Android dev-client build.
+- Then answer that you are continuing `signal-brief-mobile` at `v0.4 Prototype Hardening`, that Playwright web plus Android emulator Maestro are already validated locally, and that the immediate blockers are the Expo Go Metro watcher crash on Node `v22.15.0` plus the Windows path-length failure in the Android dev-client build.
 
 ## Last Verified State
 
 - Last green validations: `cd mobile && npm run test:playwright:web`; `maestro test -e EXPO_DEEPLINK=exp://10.0.0.201:8081 .maestro/critical-path.android.yaml`
 - Known flaky validation: Maestro web smoke flow against Expo web on port `19006`
 - Native Android path validated locally on emulator `SignalBrief_API35` with Expo Go, backend on `8000`, Expo on `8081`, and shared Maestro subflows for Expo Go setup
+- Latest Expo Go startup attempt: `npx expo start --android --port 8081` opened Expo Go and bundled, then crashed in Metro fallback watching with `Error: UNKNOWN: unknown error, lstat ... expo-constants/android/src\?\C:\...` under Node `v22.15.0`; `npx expo-doctor` still reports `17/17 checks passed`
 - Dev-client migration status: stable app ids plus `expo-dev-client` are configured, Android SDK wiring is fixed locally, and the build now fails at `:app:buildCMakeDebug[arm64-v8a]` with a Windows path-length error in generated `react-native-safe-area-context` codegen output
-- First retry tomorrow: either enable Windows long paths or move the repo to a shorter path, then rerun `cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && npm run android:dev-client -- --port 8082`
+- First retry tomorrow: for Expo Go, retry from `cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && npx expo start --android --port 8081` under a shorter path or a different Node LTS if the watcher crash repeats; for the dev client, either enable Windows long paths or move the repo to a shorter path, then rerun `cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && npm run android:dev-client -- --port 8082`
