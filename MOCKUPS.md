@@ -18,6 +18,7 @@ Signal Brief Mobile should feel calm, compact, and professional. This is not a s
 
 - Stack flow for onboarding and paper detail screens
 - Bottom tabs after onboarding:
+  - Search
   - Brief
   - Saved
   - Settings
@@ -48,7 +49,7 @@ Notes:
 
 ## Screen 2: Topic Onboarding
 
-Purpose: choose a few AI topics to shape the digest.
+Purpose: choose one or more AI topics to shape the digest.
 
 Wireframe:
 
@@ -57,14 +58,14 @@ Wireframe:
 | Skip                                             |
 |                                                  |
 |  Build your brief                                |
-|  Pick a few topics to shape today's papers       |
+|  Pick one or more topics to shape today's papers |
 |                                                  |
 |  [LLMs] [Agents] [RAG]                           |
 |  [Vision] [Evaluation] [Optimization]            |
 |  [Reasoning] [Robotics] [Multimodal]             |
 |  [Safety] [Inference] [Fine-tuning]              |
 |                                                  |
-|  Selected: 3                                     |
+|  Selected: 1                                     |
 |                                                  |
 |                          [Continue button]       |
 +--------------------------------------------------+
@@ -72,11 +73,42 @@ Wireframe:
 
 Notes:
 
-- Require at least three topics unless user explicitly skips.
+- Allow a single topic for a narrow brief, or multiple topics for a broader scan.
 - Selected chips should be visibly distinct but still restrained.
 - Copy should promise a short brief, not a personalized research platform.
 
-## Screen 3: Daily Brief
+## Screen 3: Search
+
+Purpose: let the user ask for recent papers on a specific topic or method instead of waiting for the default brief ranking.
+
+Wireframe:
+
+```text
++--------------------------------------------------+
+| Search                                           |
+| Find papers by topic                             |
+|                                                  |
+|  Search for the most relevant recent research    |
+|  Enter a targeted topic or question              |
+|                                                  |
+|  [ query input box ]                             |
+|  [LLMS] [EVALUATION] [INFERENCE]                 |
+|                                                  |
+|            [ Search papers button ]              |
+|                                                  |
+|  [results or empty state]                        |
+|                                                  |
+| Tabs: Search   Brief   Saved   Settings          |
++--------------------------------------------------+
+```
+
+Notes:
+
+- The search field should accept natural user phrasing even if the current backend is still keyword-oriented.
+- Suggested topic chips should provide a quick starting point.
+- Empty and error states should explain whether the issue is no matches versus backend failure.
+
+## Screen 4: Daily Brief
 
 Purpose: the core product screen. Show today's top five papers in ranked order with enough summary detail to decide what to open.
 
@@ -86,7 +118,7 @@ Wireframe:
 +--------------------------------------------------+
 | Brief                         bell   refresh     |
 | Today, May 13                                     |
-| Topics: LLMs, Evaluation, Inference               |
+| Active topics: LLMs, Evaluation, Inference        |
 |                                                  |
 |  1. Paper title goes here                        |
 |     Topic tags                                   |
@@ -103,7 +135,7 @@ Wireframe:
 |                                                  |
 |  ...                                             |
 |                                                  |
-| Tabs:   Brief        Saved        Settings       |
+| Tabs: Search   Brief   Saved   Settings          |
 +--------------------------------------------------+
 ```
 
@@ -112,8 +144,9 @@ Notes:
 - Each card should expose the rank, title, topic tags, source date, and 2-3 bullets.
 - Open should route to paper detail first, not directly out of the app.
 - Refresh is helpful in prototype mode, but its behavior should be explicit to avoid confusion with scheduled digests.
+- The active-topic subset should be visible and editable directly from this screen.
 
-## Screen 4: Paper Detail
+## Screen 5: Paper Detail
 
 Purpose: provide a little more depth before the user leaves for arXiv.
 
@@ -145,7 +178,7 @@ Notes:
 - Keep this screen concise; it is a decision point, not a reader view.
 - Opening arXiv should use the platform browser.
 
-## Screen 5: Saved Items
+## Screen 6: Saved Items
 
 Purpose: let the user revisit papers they marked as worth deeper reading.
 
@@ -166,7 +199,7 @@ Wireframe:
 |  Save papers from the brief to collect           |
 |  a short reading list.                           |
 |                                                  |
-| Tabs:   Brief        Saved        Settings       |
+| Tabs: Search   Brief   Saved   Settings          |
 +--------------------------------------------------+
 ```
 
@@ -175,7 +208,7 @@ Notes:
 - Saved items are local-only in the first prototype.
 - The empty state matters because many early testers will not save anything on first run.
 
-## Screen 6: Settings
+## Screen 7: Settings
 
 Purpose: manage preferences, notifications, and prototype transparency.
 
@@ -198,7 +231,7 @@ Wireframe:
 |  About this prototype                            |
 |  Built as a narrow daily AI paper briefing app   |
 |                                                  |
-| Tabs:   Brief        Saved        Settings       |
+| Tabs: Search   Brief   Saved   Settings          |
 +--------------------------------------------------+
 ```
 
@@ -206,6 +239,7 @@ Notes:
 
 - The prototype note helps set the right expectations for testers.
 - Topic editing can reuse the onboarding chip selector.
+- Notification copy should stay honest that registration exists before delivery does.
 
 ## Critical Empty And Error States
 

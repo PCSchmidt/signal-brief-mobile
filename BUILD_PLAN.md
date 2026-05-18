@@ -2,94 +2,124 @@
 
 ## Objective
 
-Move from empty repo to a public prototype in a controlled sequence that proves the core value first: a reliable daily AI paper briefing on a mobile device.
+Move from a local exploratory prototype to a release-ready mobile app in deliberate stages. The first useful public shape is a narrow AI paper briefing product with a clear daily brief, a query-search path, and enough operational discipline to survive store release.
 
 ## Current Progress
 
-- Planning docs, mockups, and frontend shell are complete.
+- Planning docs, mockups, and the mobile shell are in place.
 - The FastAPI backend is live with arXiv ingestion, digest persistence, startup warmup, and topic-aware brief generation.
 - The mobile app is connected to the live `/brief/today` endpoint.
-- Local persistence for saved items and topic preferences is implemented.
-- Backend `pytest`, mobile Jest coverage for the brief screen, passing Playwright web smoke flows, and a passing Android emulator Maestro smoke flow are in place.
+- A live `/papers/search` backend path and mobile Search screen are implemented.
+- Local persistence for onboarding state, topics, saved items, and paper cache is implemented.
+- The Brief screen now exposes active topics directly, and the topic picker now supports a single-topic brief.
+- Notification preference registration is wired through the backend, but notification delivery itself remains open.
+- Backend `pytest`, focused mobile Jest coverage, passing Playwright web smoke flows, and a passing Android emulator Maestro smoke flow are in place.
+
+## Reality Check
+
+The prototype now works as a narrow research-scanning app, but it is not yet ready for public app-store deployment.
+
+The main gaps are:
+
+- natural-language query quality is still too literal
+- backend persistence and hosting are still prototype-grade
+- notification delivery is incomplete
+- release assets, privacy docs, signing, and store workflows are not yet complete
+- iOS release work has not yet been validated end to end
 
 ## Phase 1: Planning And Boundaries
 
 - Confirm the scope in the planning docs
 - Freeze the first content scope to arXiv only
-- Freeze the first user experience to a five-paper daily brief
-- Decide the initial summarization provider only after the service boundaries are defined
+- Freeze the first user experience to a five-paper daily brief plus targeted search
+- Keep summaries heuristic until the product shape proves useful
+
+Status: complete
 
 ## Phase 2: Frontend Foundation
 
 - Scaffold the Expo TypeScript app
 - Set up routing, screen structure, shared UI primitives, and local state
-- Implement static versions of onboarding, brief list, paper detail, saved items, and settings
-- Use mock data and placeholder summaries until the backend contract is stable
+- Implement onboarding, brief list, paper detail, saved items, settings, and search
+- Use mock data where needed until backend contracts stabilize
+
+Status: complete for the current prototype shell
 
 ## Phase 3: Backend Foundation
 
 - Scaffold FastAPI with a small service layout
-- Add an arXiv ingestion module for a fixed source set
+- Add arXiv ingestion for a fixed source set
 - Add ranking and digest assembly services behind clean interfaces
-- Add persisted digest storage and basic health checks
+- Add persisted digest storage and health checks
+- Add targeted search against the same tracked source slice
 
-## Phase 4: End-To-End Integration
+Status: complete for the current local prototype stage
 
-- Connect the mobile app to live digest endpoints
+## Phase 4: Prototype Hardening
+
+- Connect the mobile app to live digest and search endpoints
 - Persist topic preferences and saved items locally on the device
-- Register push tokens and send digest-ready notifications
-- Test on real devices, not only simulators
+- Make the active topic subset explicit and editable from the brief itself
+- Register push preferences and device tokens
+- Add focused tests, smoke validation, and clearer degraded states
+- Validate the current runtime on emulator and dev-client paths
 
-Current status:
+Status: in progress
 
-- Live digest endpoints connected
-- Local topic and save persistence complete
-- Push token registration and device-preference persistence are wired for native platforms; send-side delivery still remains
-- Expo web smoke coverage added through Playwright; native Android smoke coverage validated locally on an emulator path with Maestro and shared Expo Go subflows
-- Internal readback for device preferences is available for local debugging, and the app now exposes richer notification sync states in Settings
-- Dev-client migration is scaffolded, but the first Android build is currently blocked by a Windows path-length failure during native CMake codegen
+Remaining work inside this phase:
 
-## Phase 5: Release Hardening
+- improve search quality for short natural-language prompts
+- finish native dev-client validation on the short Windows path
+- decide whether notifications stay in scope for the first release or are deferred
+- document real deployment prerequisites instead of prototype assumptions
 
-- Add logging, error boundaries, and basic analytics
-- Tighten empty states, retry paths, and degraded-mode behavior
-- Prepare screenshots, app descriptions, privacy disclosures, and store metadata
-- Deploy backend services and submit the prototype to both app stores
+## Phase 5: Backend Production Readiness
 
-## Initial Weekly Cadence
+- Host the backend over HTTPS
+- Replace or harden prototype persistence
+- Add environment separation for local, staging, and production
+- Add basic observability, logging, and failure handling
+- Add a real digest-generation and notification-send path if notifications remain in scope
 
-### Week 1
+Status: not started
 
-- Finalize scope docs
-- Scaffold Expo app and static screens
-- Create FastAPI skeleton and Supabase project
+## Phase 6: Android Release Track
 
-### Week 2
+- Produce a signed Android release build
+- Configure Play Console internal and closed testing
+- Prepare screenshots, listing copy, privacy disclosures, support links, and data safety answers
+- Validate the release build on at least one physical Android device
 
-- Build arXiv ingestion and digest generation
-- Define database schema and seed flow
-- Add mock-to-live API integration points in the app
+Status: not started
 
-### Week 3
+## Phase 7: iOS Release Track
 
-- Connect the app to live data
-- Add local saves, preferences, and push token registration
-- Test the full digest loop on devices
+- Set up Apple Developer and App Store Connect records
+- Produce the first iOS build and distribute it through TestFlight
+- Validate the build on at least one real iPhone
+- Prepare App Store metadata, privacy labels, review notes, and support links
 
-### Week 4
+Status: not started
 
-- Harden release behavior
-- Prepare store assets and compliance items
-- Deploy services and submit the public prototype
+## Exit Criteria Before Android Internal Release
 
-## Exit Criteria Before Scaffolding
+- Search returns visibly relevant results for representative short prompts
+- The backend is reachable via a production HTTPS URL
+- Release build signing is configured and tested
+- Privacy policy and support metadata exist
+- The app works on a physical Android device
 
-- Scope docs approved with `SCOPE CONFIRMED`
-- Any finish-line objections resolved, especially the public-release expectation for an exploratory build
+## Exit Criteria Before iOS TestFlight
 
-## Exit Criteria Before Store Submission
+- The backend is reachable via the same production environment
+- iOS signing and provisioning are working
+- The app works on a real iPhone with the target backend
+- Notification behavior is either complete or explicitly out of scope for the release
 
-- Digest generation is reliable for at least several consecutive runs
-- Summary quality is acceptable on a representative sample of papers
-- App navigation, save flow, settings, and notifications all work on real devices
-- Basic privacy and data handling disclosures are written and accurate
+## Exit Criteria Before Public Store Submission
+
+- Digest generation is reliable for repeated runs
+- Search quality is acceptable for real user prompts, not only keyword phrases
+- App navigation, save flow, settings, and external links work on real devices
+- Store assets, privacy disclosures, support contact, and release notes are accurate
+- The backend has an owner-operated deployment and rollback plan
