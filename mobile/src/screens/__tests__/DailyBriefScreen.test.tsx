@@ -27,6 +27,7 @@ describe('DailyBriefScreen', () => {
         digestDateLabel="May 13"
         errorMessage={null}
         isLoading={false}
+        onEditTopics={jest.fn()}
         onOpenPaper={jest.fn()}
         onRefresh={jest.fn()}
         onToggleSave={jest.fn()}
@@ -50,6 +51,7 @@ describe('DailyBriefScreen', () => {
         digestDateLabel="May 13"
         errorMessage="Backend unavailable"
         isLoading={false}
+        onEditTopics={jest.fn()}
         onOpenPaper={jest.fn()}
         onRefresh={onRefresh}
         onToggleSave={jest.fn()}
@@ -73,6 +75,7 @@ describe('DailyBriefScreen', () => {
         digestDateLabel="May 13"
         errorMessage={null}
         isLoading={false}
+        onEditTopics={jest.fn()}
         onOpenPaper={jest.fn()}
         onRefresh={onRefresh}
         onToggleSave={jest.fn()}
@@ -86,5 +89,30 @@ describe('DailyBriefScreen', () => {
 
     expect(screen.getByText('Today\'s brief is still being prepared.')).toBeTruthy();
     expect(onRefresh).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows active topics and exposes an edit action from the brief screen', () => {
+    const onEditTopics = jest.fn();
+
+    render(
+      <DailyBriefScreen
+        digestDateLabel="May 13"
+        errorMessage={null}
+        isLoading={false}
+        onEditTopics={onEditTopics}
+        onOpenPaper={jest.fn()}
+        onRefresh={jest.fn()}
+        onToggleSave={jest.fn()}
+        papers={[PAPER_FIXTURE]}
+        savedPaperIds={[]}
+        selectedTopics={['llms']}
+      />
+    );
+
+    fireEvent.press(screen.getByLabelText('Edit brief topics'));
+
+    expect(screen.getByText('Active topics')).toBeTruthy();
+    expect(screen.getByText('Refresh reruns the top five for this exact subset.')).toBeTruthy();
+    expect(onEditTopics).toHaveBeenCalledTimes(1);
   });
 });

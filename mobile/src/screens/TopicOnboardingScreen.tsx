@@ -32,7 +32,7 @@ export function TopicOnboardingScreen({
     onSelectionChange([...selectedTopics, topic]);
   };
 
-  const minimumSelected = selectedTopics.length >= 3;
+  const minimumSelected = selectedTopics.length >= 1;
 
   return (
     <SafeAreaView edges={['top', 'bottom']} style={styles.safeArea}>
@@ -45,7 +45,7 @@ export function TopicOnboardingScreen({
           <Text style={styles.kicker}>Daily setup</Text>
           <Text style={styles.title}>Build your brief</Text>
           <Text style={styles.subtitle}>
-            Pick a few topics to shape which AI papers rise into today&apos;s top five.
+            Pick one or more topics to shape which AI papers rise into today&apos;s top five.
           </Text>
         </View>
 
@@ -67,7 +67,7 @@ export function TopicOnboardingScreen({
           </View>
           <View style={styles.infoCopyWrap}>
             <Feather color={colors.teal} name="filter" size={18} />
-            <Text style={styles.infoCopy}>The first prototype uses a small fixed arXiv source set.</Text>
+            <Text style={styles.infoCopy}>Choose one topic for a narrow brief, or combine several for a wider scan.</Text>
           </View>
         </View>
 

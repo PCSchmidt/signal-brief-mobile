@@ -11,6 +11,7 @@ export function DailyBriefScreen({
   digestDateLabel,
   errorMessage,
   isLoading,
+  onEditTopics,
   onOpenPaper,
   onRefresh,
   onToggleSave,
@@ -21,6 +22,7 @@ export function DailyBriefScreen({
   digestDateLabel: string;
   errorMessage: string | null;
   isLoading: boolean;
+  onEditTopics: () => void;
   onOpenPaper: (paperId: string) => void;
   onRefresh: () => void;
   onToggleSave: (paperId: string) => void;
@@ -48,21 +50,34 @@ export function DailyBriefScreen({
 
         <Text style={styles.title}>A compact scan of what matters today</Text>
         <Text style={styles.subtitle}>
-          Today&apos;s brief ranks recent papers from the fixed source set using your chosen topics.
+          Today&apos;s brief ranks five recent papers from the tracked arXiv AI categories using your
+          active topic selection.
         </Text>
 
-        <View style={styles.topicRow}>
-          {selectedTopics.map((topic) => (
-            <TopicChip key={topic} label={topic.toUpperCase()} />
-          ))}
+        <View style={styles.topicPanel}>
+          <View style={styles.topicPanelHeader}>
+            <View>
+              <Text style={styles.topicPanelLabel}>Active topics</Text>
+              <Text style={styles.topicPanelCopy}>Refresh reruns the top five for this exact subset.</Text>
+            </View>
+            <Pressable accessibilityLabel="Edit brief topics" onPress={onEditTopics} style={styles.topicAction}>
+              <Text style={styles.topicActionLabel}>Edit topics</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.topicRow}>
+            {selectedTopics.map((topic) => (
+              <TopicChip key={topic} label={topic.toUpperCase()} />
+            ))}
+          </View>
         </View>
 
         <View style={styles.digestMetaPanel}>
           <Text style={styles.digestMetaTitle}>Top five papers</Text>
           <Text style={styles.digestMetaCopy}>
             {isLoading
-              ? 'Refreshing the latest persisted brief from the backend.'
-              : 'Fast summaries first, full details one tap away.'}
+              ? 'Refreshing the latest ranked brief for your selected topics.'
+              : `Showing five recent papers ranked for ${selectedTopics.map((topic) => topic.toUpperCase()).join(', ')}.`}
           </Text>
         </View>
 
@@ -219,6 +234,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+    marginTop: 14,
+  },
+  topicAction: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  topicActionLabel: {
+    color: colors.text,
+    fontFamily: fontFamilies.medium,
+    fontSize: 13,
+  },
+  topicPanel: {
+    backgroundColor: colors.card,
+    borderColor: colors.border,
+    borderRadius: 24,
+    borderWidth: 1,
     marginTop: 18,
+    padding: 18,
+  },
+  topicPanelCopy: {
+    color: colors.mutedText,
+    fontFamily: fontFamilies.body,
+    fontSize: 14,
+    marginTop: 6,
+  },
+  topicPanelHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  topicPanelLabel: {
+    color: colors.text,
+    fontFamily: fontFamilies.medium,
+    fontSize: 15,
   },
 });

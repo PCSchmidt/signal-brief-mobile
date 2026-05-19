@@ -30,6 +30,14 @@ class DailyBriefResponse(BaseModel):
     topics: list[str] = Field(min_length=1)
 
 
+class SearchPapersResponse(BaseModel):
+    generated_at: str
+    papers: list[BriefPaper] = Field(default_factory=list)
+    query: str
+    start_date: str | None = None
+    end_date: str | None = None
+
+
 class PushTokenRegistrationRequest(BaseModel):
     device_id: str = Field(min_length=1)
     notifications_enabled: bool = True

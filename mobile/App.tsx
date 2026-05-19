@@ -20,6 +20,7 @@ import { TOPIC_OPTIONS } from './src/data/mockData';
 import { DailyBriefScreen } from './src/screens/DailyBriefScreen';
 import { PaperDetailScreen } from './src/screens/PaperDetailScreen';
 import { SavedScreen } from './src/screens/SavedScreen';
+import { SearchScreen } from './src/screens/SearchScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 import { SplashScreen } from './src/screens/SplashScreen';
 import { loadPersistedAppState, savePersistedAppState } from './src/services/appStorage';
@@ -49,6 +50,7 @@ function MainTabs({
   savedPaperIds,
   selectedTopics,
   notificationsEnabled,
+  onCachePapers,
   onEditTopics,
   onOpenPaper,
   onRefreshBrief,
@@ -66,6 +68,7 @@ function MainTabs({
   savedPaperIds: string[];
   selectedTopics: TopicKey[];
   notificationsEnabled: boolean;
+  onCachePapers: (papers: Paper[]) => void;
   onEditTopics: () => void;
   onOpenPaper: (paperId: string) => void;
   onRefreshBrief: () => void;
@@ -95,7 +98,9 @@ function MainTabs({
         },
         tabBarIcon: ({ color, size }) => {
           const iconName =
-            route.name === 'Brief'
+            route.name === 'Search'
+              ? 'search'
+              : route.name === 'Brief'
               ? 'file-text'
               : route.name === 'Saved'
                 ? 'bookmark'
@@ -105,12 +110,24 @@ function MainTabs({
         },
       })}
     >
+      <Tab.Screen name="Search">
+        {() => (
+          <SearchScreen
+            onCachePapers={onCachePapers}
+            onOpenPaper={onOpenPaper}
+            onToggleSave={onToggleSave}
+            savedPaperIds={savedPaperIds}
+            suggestedTopics={selectedTopics}
+          />
+        )}
+      </Tab.Screen>
       <Tab.Screen name="Brief">
         {() => (
           <DailyBriefScreen
             digestDateLabel={digestDateLabel}
             errorMessage={briefError}
             isLoading={isRefreshing}
+            onEditTopics={onEditTopics}
             onOpenPaper={onOpenPaper}
             onRefresh={onRefreshBrief}
             onToggleSave={onToggleSave}
@@ -349,6 +366,18 @@ export default function App() {
     return new Map(Object.entries(paperCache));
   }, [paperCache]);
 
+  const cachePapers = (papers: Paper[]) => {
+    setPaperCache((currentCache) => {
+      const nextCache = { ...currentCache };
+
+      papers.forEach((paper) => {
+        nextCache[paper.id] = paper;
+      });
+
+      return nextCache;
+    });
+  };
+
   const toggleSave = (paperId: string) => {
     setSavedPaperIds((currentIds) => {
       if (currentIds.includes(paperId)) {
@@ -402,6 +431,7 @@ export default function App() {
                 notificationStatusMessage={notificationStatusMessage}
                 notificationStatusKind={notificationStatusKind}
                 notificationsEnabled={notificationsEnabled}
+                onCachePapers={cachePapers}
                 onEditTopics={() => navigation.navigate('Onboarding', { mode: 'edit' })}
                 onOpenPaper={(paperId) => navigation.navigate('PaperDetail', { paperId })}
                 onRefreshBrief={() => {

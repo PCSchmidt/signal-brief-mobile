@@ -30,7 +30,9 @@ Define the minimum test strategy that keeps the prototype honest while still let
 - Focused mobile tests cover SearchScreen query submission, DailyBriefScreen active-topic visibility, and TopicOnboardingScreen single-topic continuation.
 - Stable Playwright web smoke tests exist at `mobile/playwright/critical-path.spec.ts` and pass locally for the critical path, settings topic editing, and digest-error recovery.
 - The Android Maestro flow at `mobile/.maestro/critical-path.android.yaml` passes locally on an Android emulator with Expo Go when `EXPO_DEEPLINK` is set correctly.
+- Manual Android emulator dev-client testing now covers targeted search, paper detail, outbound arXiv linking, save and unsave, brief loading, and settings topic editing.
 - Push-token registration is implemented and tested, but end-to-end notification delivery is not yet automated because delivery is not yet implemented.
+- Local Android dev builds currently surface an expected Expo and Firebase notification-registration warning until Android push credentials are configured.
 
 ## Coverage Targets
 
@@ -99,7 +101,7 @@ The current backend is still too literal for these cases, so these tests should 
 - Signed Android release or internal-test build installs and launches correctly.
 - The app reaches the hosted backend over HTTPS.
 - Search, brief refresh, save flow, and outbound arXiv links work on a physical Android device.
-- Notification permission flow is validated on a real Android device.
+- Notification permission flow is validated on a real Android device after Android Expo and Firebase push credentials are configured.
 
 ### iOS
 

@@ -6,28 +6,37 @@ from xml.etree import ElementTree as ET
 
 import httpx
 
-from app.schemas import BriefPaper, DailyBriefResponse, DigestGenerationResponse
+from app.schemas import BriefPaper, DailyBriefResponse, DigestGenerationResponse, SearchPapersResponse
 from app.services.digest_store import load_digest, save_digest
 
 ARXIV_API_URL = "https://export.arxiv.org/api/query"
 ARXIV_QUERY = "cat:cs.AI OR cat:cs.LG OR cat:cs.CL OR cat:cs.CV OR cat:cs.RO"
 ARXIV_FETCH_LIMIT = 12
+ARXIV_SEARCH_FETCH_LIMIT = 25
 DEFAULT_TOPICS = ["llms", "evaluation", "inference"]
 
 ATOM_NS = {"atom": "http://www.w3.org/2005/Atom"}
 
 TOPIC_KEYWORDS = {
     "agents": ("agent", "workflow", "planning"),
+    "ai-systems": ("system", "systems", "orchestration", "scheduler", "pipeline", "infrastructure"),
+    "benchmarks": ("benchmark", "leaderboard", "test set", "evaluation set", "scoring"),
+    "data-engineering": ("ingestion", "etl", "indexing", "curation", "data quality", "data pipeline"),
+    "deployment": ("deployment", "rollout", "monitoring", "observability", "reliability"),
+    "developer-tools": ("developer tool", "developer tools", "ide", "code generation", "software engineering", "repository", "repo", "coding agent"),
     "evaluation": ("evaluate", "evaluation", "judge", "benchmark"),
     "fine-tuning": ("fine-tuning", "alignment", "instruction tuning"),
+    "governance": ("governance", "compliance", "regulation", "policy", "audit", "accountability", "red teaming"),
     "inference": ("inference", "latency", "serving", "routing"),
     "llms": ("language model", "llm", "transformer", "prompt"),
+    "model-serving": ("serving", "throughput", "batching", "inference server", "caching", "tail latency"),
     "multimodal": ("multimodal", "vision-language", "audio-text"),
     "optimization": ("optimization", "efficient", "compression", "throughput"),
     "rag": ("retrieval", "retrieval-augmented", "rag"),
     "reasoning": ("reasoning", "chain of thought", "deliberation"),
     "robotics": ("robot", "robotics", "control"),
     "safety": ("safety", "harmless", "alignment"),
+    "synthetic-data": ("synthetic data", "generated data", "augmentation", "weak supervision", "distilled data"),
     "vision": ("vision", "image", "diagram", "visual"),
 }
 
@@ -59,10 +68,12 @@ def get_today_brief(
     topics: list[str] | None = None,
     *,
     digest_size: int = 5,
+    database_url: str | None = None,
     storage_dir: Path | None = None,
 ) -> DailyBriefResponse:
     return _get_or_build_digest(
         topics=topics,
+        database_url=database_url,
         digest_size=digest_size,
         storage_dir=storage_dir,
     )
@@ -72,9 +83,11 @@ def queue_digest_generation(
     topics: list[str] | None = None,
     *,
     digest_size: int = 5,
+    database_url: str | None = None,
     storage_dir: Path | None = None,
 ) -> DigestGenerationResponse:
     digest = _build_digest(
+        database_url=database_url,
         selected_topics=_normalize_topics(topics),
         digest_size=digest_size,
         storage_dir=storage_dir,
@@ -87,9 +100,43 @@ def queue_digest_generation(
     )
 
 
+def search_papers(
+    query: str,
+    *,
+    limit: int = 10,
+    start_date: date | None = None,
+    end_date: date | None = None,
+) -> SearchPapersResponse:
+    normalized_query = _normalize_text(query).strip()
+
+    if not normalized_query:
+        raise BriefServiceError("Search query cannot be empty.")
+
+    generated_at = datetime.now(UTC).replace(microsecond=0)
+
+    try:
+        entries = _fetch_search_entries(
+            query=normalized_query,
+            start_date=start_date,
+            end_date=end_date,
+            limit=limit,
+        )
+    except (ET.ParseError, httpx.HTTPError, ValueError) as exc:
+        raise BriefServiceError("Unable to fetch search results from arXiv.") from exc
+
+    return SearchPapersResponse(
+        generated_at=generated_at.isoformat(),
+        papers=[_to_brief_paper(entry, rank=index + 1) for index, entry in enumerate(entries)],
+        query=normalized_query,
+        start_date=start_date.isoformat() if start_date else None,
+        end_date=end_date.isoformat() if end_date else None,
+    )
+
+
 def _get_or_build_digest(
     topics: list[str] | None,
     *,
+    database_url: str | None,
     digest_size: int,
     storage_dir: Path | None,
 ) -> DailyBriefResponse:
@@ -97,11 +144,17 @@ def _get_or_build_digest(
     digest_date = datetime.now(UTC).date().isoformat()
 
     if storage_dir is not None:
-        cached_digest = load_digest(storage_dir, digest_date, selected_topics)
+        cached_digest = load_digest(
+            storage_dir,
+            digest_date,
+            selected_topics,
+            database_url=database_url,
+        )
         if cached_digest is not None:
             return cached_digest
 
     return _build_digest(
+        database_url=database_url,
         selected_topics=selected_topics,
         digest_size=digest_size,
         storage_dir=storage_dir,
@@ -110,6 +163,7 @@ def _get_or_build_digest(
 
 def _build_digest(
     *,
+    database_url: str | None,
     selected_topics: list[str],
     digest_size: int,
     storage_dir: Path | None,
@@ -141,20 +195,54 @@ def _build_digest(
     )
 
     if storage_dir is not None:
-        return save_digest(storage_dir, digest)
+        return save_digest(storage_dir, digest, database_url=database_url)
 
     return digest
 
 
 def _fetch_recent_entries() -> list[ArxivEntry]:
+    return _fetch_entries(
+        search_query=ARXIV_QUERY,
+        sort_by="submittedDate",
+        max_results=ARXIV_FETCH_LIMIT,
+    )
+
+
+def _fetch_search_entries(
+    *,
+    query: str,
+    start_date: date | None,
+    end_date: date | None,
+    limit: int,
+) -> list[ArxivEntry]:
+    if start_date and end_date and start_date > end_date:
+        raise BriefServiceError("Search start_date cannot be later than end_date.")
+
+    entries = _fetch_entries(
+        search_query=_build_search_query(query, start_date=start_date, end_date=end_date),
+        sort_by="relevance",
+        max_results=max(limit * 2, ARXIV_SEARCH_FETCH_LIMIT),
+    )
+
+    filtered_entries = [
+        entry
+        for entry in entries
+        if (start_date is None or entry.published_at >= start_date)
+        and (end_date is None or entry.published_at <= end_date)
+    ]
+
+    return filtered_entries[:limit]
+
+
+def _fetch_entries(*, search_query: str, sort_by: str, max_results: int) -> list[ArxivEntry]:
     response = httpx.get(
         ARXIV_API_URL,
         params={
-            "search_query": ARXIV_QUERY,
-            "sortBy": "submittedDate",
+            "search_query": search_query,
+            "sortBy": sort_by,
             "sortOrder": "descending",
             "start": 0,
-            "max_results": ARXIV_FETCH_LIMIT,
+            "max_results": max_results,
         },
         headers={"User-Agent": "signal-brief-mobile/0.1"},
         timeout=15.0,
@@ -194,6 +282,23 @@ def _fetch_recent_entries() -> list[ArxivEntry]:
         )
 
     return entries
+
+
+def _build_search_query(query: str, *, start_date: date | None, end_date: date | None) -> str:
+    tokens = re.findall(r"[A-Za-z0-9-]+", query.lower())
+
+    if not tokens:
+        raise BriefServiceError("Search query must include at least one searchable term.")
+
+    text_clause = " AND ".join(f"all:{token}" for token in tokens)
+    clauses = [f"({ARXIV_QUERY})", f"({text_clause})"]
+
+    if start_date or end_date:
+        lower_bound = (start_date or date(1991, 1, 1)).strftime("%Y%m%d")
+        upper_bound = (end_date or datetime.now(UTC).date()).strftime("%Y%m%d")
+        clauses.append(f"submittedDate:[{lower_bound}0000 TO {upper_bound}2359]")
+
+    return " AND ".join(clauses)
 
 
 def _normalize_topics(topics: list[str] | None) -> list[str]:

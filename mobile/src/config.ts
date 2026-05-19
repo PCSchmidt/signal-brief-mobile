@@ -5,5 +5,7 @@ const fallbackApiBaseUrl = Platform.select({
   default: 'http://127.0.0.1:8000',
 });
 
+const configuredApiBaseUrl = process.env.EXPO_PUBLIC_API_BASE_URL?.trim().replace(/\/$/, '');
+
 export const API_BASE_URL =
-  process.env.EXPO_PUBLIC_API_BASE_URL?.trim() || fallbackApiBaseUrl || 'http://127.0.0.1:8000';
+  configuredApiBaseUrl || fallbackApiBaseUrl || 'http://127.0.0.1:8000';

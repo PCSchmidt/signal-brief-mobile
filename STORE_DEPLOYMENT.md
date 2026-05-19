@@ -11,6 +11,8 @@ This document tracks what is required to move Signal Brief from a local prototyp
 - Expo scheme: `signalbrief`
 - The app still assumes a prototype backend and local-development defaults.
 - Notification preference registration exists, but digest-ready notification delivery does not.
+- The Expo app already supports a hosted backend through `EXPO_PUBLIC_API_BASE_URL`.
+- EAS build profiles now exist for `development`, `preview`, and `production`.
 
 ## Android Path
 
@@ -18,6 +20,7 @@ This document tracks what is required to move Signal Brief from a local prototyp
 
 - A production backend URL over HTTPS
 - Release environment configuration in the mobile app
+- EAS environment setup so `EXPO_PUBLIC_API_BASE_URL` points at the hosted backend for non-local builds
 - Android signing key and secure storage for that key
 - A signed Android App Bundle
 - Play Console app record
@@ -40,6 +43,7 @@ This document tracks what is required to move Signal Brief from a local prototyp
 - App Store Connect app record
 - iOS signing and provisioning
 - First iOS build path, likely through EAS or a Mac/Xcode workflow
+- EAS environment setup so iOS builds target the hosted backend instead of localhost defaults
 - TestFlight distribution
 - Real-device validation on at least one iPhone
 - Privacy labels, support URL, screenshots, icon, descriptions, and review notes
@@ -59,3 +63,8 @@ This document tracks what is required to move Signal Brief from a local prototyp
 3. Complete Android internal or closed testing.
 4. Complete the first iOS TestFlight build.
 5. Reassess whether public release is worth the added ceremony for this app.
+
+## Frontend Hosting Decision
+
+- Do not deploy the Expo app itself to Vercel; this is a native mobile client, not a web product.
+- Use Vercel only if a lightweight privacy policy, support page, or landing page becomes necessary for store submission.

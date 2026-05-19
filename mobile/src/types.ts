@@ -1,16 +1,24 @@
 export type TopicKey =
   | 'agents'
+  | 'ai-systems'
+  | 'benchmarks'
+  | 'data-engineering'
+  | 'deployment'
+  | 'developer-tools'
   | 'evaluation'
   | 'fine-tuning'
   | 'inference'
   | 'llms'
+  | 'model-serving'
   | 'multimodal'
   | 'optimization'
   | 'rag'
   | 'reasoning'
   | 'robotics'
   | 'safety'
-  | 'vision';
+  | 'synthetic-data'
+  | 'vision'
+  | 'governance';
 
 export type TopicOption = {
   key: TopicKey;
@@ -37,6 +45,14 @@ export type DailyBrief = {
   topics: TopicKey[];
 };
 
+export type SearchResults = {
+  generatedAt: string;
+  papers: Paper[];
+  query: string;
+  startDate: string | null;
+  endDate: string | null;
+};
+
 export type RootStackParamList = {
   MainTabs: undefined;
   Onboarding: { mode?: 'edit' | 'setup' } | undefined;
@@ -44,6 +60,7 @@ export type RootStackParamList = {
 };
 
 export type MainTabParamList = {
+  Search: undefined;
   Brief: undefined;
   Saved: undefined;
   Settings: undefined;

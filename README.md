@@ -12,6 +12,7 @@ Signal Brief is an exploratory mobile prototype for scanning recent AI research.
 - The Brief tab now makes the active topic subset explicit and lets the user jump straight into topic editing.
 - The Search tab accepts freeform text and returns recent papers from the tracked arXiv slice.
 - Notification preference sync is implemented, but actual digest-ready push delivery is not yet implemented.
+- Local Android emulator dev builds are currently pinned to the legacy React Native architecture so the native build can run reliably on this Windows machine.
 - Native Android and iOS identifiers are configured, and Expo dev-client scaffolding exists, but public release work is still ahead.
 
 ## What Works Now
@@ -25,6 +26,7 @@ Signal Brief is an exploratory mobile prototype for scanning recent AI research.
 - Paper detail screen with metadata, tags, short rationale, and outbound arXiv link
 - Saved-items list backed by local device state
 - Settings screen for topic editing and notification preference registration
+- Android emulator dev-client flow for search, paper detail, save and unsave, brief loading, and settings topic editing
 
 ### Backend
 
@@ -41,6 +43,7 @@ Signal Brief is an exploratory mobile prototype for scanning recent AI research.
 - Focused mobile Jest coverage for search, brief-topic visibility, and single-topic onboarding behavior
 - Passing Playwright web smoke coverage for the critical path and error recovery
 - Passing Android emulator Maestro smoke coverage on the current Expo Go path
+- Passing manual Android emulator dev-client smoke coverage for Search, Brief, Saved, and Settings flows
 
 ## Gap Analysis
 
@@ -60,6 +63,7 @@ Signal Brief is an exploratory mobile prototype for scanning recent AI research.
 - Default mobile config still assumes a local backend in development.
 - There is no production hosting, no durable database, no background job scheduler, no alerting, and no production observability stack yet.
 - Notification delivery is not implemented. The app can register tokens and preferences, but it does not yet send the digest-ready notification.
+- Local Android dev builds currently show an expected Expo and Firebase warning in Settings until Android push credentials are configured.
 
 ### Store-Readiness Gaps
 
@@ -119,6 +123,7 @@ Current validated coverage includes:
 - relaunch and verify onboarding stays skipped and saved state persists
 - settings topic editing on Expo web
 - digest error recovery on Expo web
+- manual Android emulator validation for search results, paper detail, outbound arXiv link, save and unsave, brief loading, and settings topic editing
 
 ## Current Validation Commands
 
@@ -127,7 +132,9 @@ Current validated coverage includes:
 - Mobile Jest tests: `cd mobile && npx jest src/screens/__tests__/SearchScreen.test.tsx src/screens/__tests__/DailyBriefScreen.test.tsx src/screens/__tests__/TopicOnboardingScreen.test.tsx --runInBand`
 - Playwright web smoke flow: `cd mobile && npm run test:playwright:web`
 - Maestro Android smoke flow: `cd mobile && /c/Users/pchri/maestro/maestro/bin/maestro test -e EXPO_DEEPLINK=exp://<host>:8081 .maestro/critical-path.android.yaml`
-- Local Android dev build: `cd mobile && npm run android:dev-client -- --port 8082`
-- Dev-client Metro: `cd mobile && npm run start:dev-client`
+- Local Android dev build and install: `cd mobile && npm run android`
 
-Use `C:\w\sbm\mobile` as the preferred path for native mobile commands on this Windows machine.
+Current local Android caveats:
+
+- Settings shows an expected notification-registration warning until Android push credentials are configured.
+- The current Windows-native Android path is validated with the legacy React Native architecture enabled locally.

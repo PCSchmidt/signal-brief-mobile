@@ -6,16 +6,24 @@ const STORAGE_KEY = 'signal-brief-mobile/app-state-v1';
 
 const VALID_TOPICS: TopicKey[] = [
   'agents',
+  'ai-systems',
+  'benchmarks',
+  'data-engineering',
+  'deployment',
+  'developer-tools',
   'evaluation',
   'fine-tuning',
+  'governance',
   'inference',
   'llms',
+  'model-serving',
   'multimodal',
   'optimization',
   'rag',
   'reasoning',
   'robotics',
   'safety',
+  'synthetic-data',
   'vision',
 ];
 

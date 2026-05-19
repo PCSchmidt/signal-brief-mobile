@@ -1,5 +1,5 @@
 import { API_BASE_URL } from '../config';
-import { DailyBrief, Paper, TopicKey } from '../types';
+import { DailyBrief, Paper, SearchResults, TopicKey } from '../types';
 
 type ApiPaper = {
   abstract_excerpt: string;
@@ -21,18 +21,34 @@ type ApiDailyBrief = {
   topics: string[];
 };
 
+type ApiSearchResults = {
+  generated_at: string;
+  papers: ApiPaper[];
+  query: string;
+  start_date: string | null;
+  end_date: string | null;
+};
+
 const VALID_TOPICS: TopicKey[] = [
   'agents',
+  'ai-systems',
+  'benchmarks',
+  'data-engineering',
+  'deployment',
+  'developer-tools',
   'evaluation',
   'fine-tuning',
+  'governance',
   'inference',
   'llms',
+  'model-serving',
   'multimodal',
   'optimization',
   'rag',
   'reasoning',
   'robotics',
   'safety',
+  'synthetic-data',
   'vision',
 ];
 
@@ -51,6 +67,26 @@ export async function fetchTodayBrief(selectedTopics: TopicKey[]): Promise<Daily
     generatedAt: payload.generated_at,
     papers: payload.papers.map(mapPaper),
     topics: payload.topics.filter(isTopicKey),
+  };
+}
+
+export async function searchPapers(query: string, limit = 10): Promise<SearchResults> {
+  const response = await fetch(
+    `${API_BASE_URL}/papers/search?query=${encodeURIComponent(query)}&limit=${limit.toString()}`
+  );
+
+  if (!response.ok) {
+    throw new Error(`Search request failed with status ${response.status}`);
+  }
+
+  const payload = (await response.json()) as ApiSearchResults;
+
+  return {
+    endDate: payload.end_date,
+    generatedAt: payload.generated_at,
+    papers: payload.papers.map(mapPaper),
+    query: payload.query,
+    startDate: payload.start_date,
   };
 }
 

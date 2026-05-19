@@ -1,3 +1,4 @@
+from datetime import date
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
@@ -9,8 +10,9 @@ from app.schemas import (
     HealthResponse,
     PushTokenRegistrationRequest,
     PushTokenRegistrationResponse,
+    SearchPapersResponse,
 )
-from app.services.brief_service import BriefServiceError, get_today_brief, queue_digest_generation
+from app.services.brief_service import BriefServiceError, get_today_brief, queue_digest_generation, search_papers
 from app.services.device_preferences_store import get_device_preferences, save_device_preferences
 from app.settings import Settings, get_settings
 
@@ -35,6 +37,7 @@ def brief_today(
     try:
         return get_today_brief(
             topics=topics,
+            database_url=settings.database_url,
             digest_size=settings.digest_size,
             storage_dir=Path(settings.digest_storage_dir),
         )
@@ -42,6 +45,33 @@ def brief_today(
         raise HTTPException(
             status_code=status.HTTP_502_BAD_GATEWAY,
             detail="Unable to assemble today's brief from arXiv.",
+        ) from exc
+
+
+@router.get("/papers/search", response_model=SearchPapersResponse)
+def papers_search(
+    query: str = Query(min_length=2),
+    limit: int = Query(default=10, ge=1, le=20),
+    start_date: date | None = Query(default=None),
+    end_date: date | None = Query(default=None),
+) -> SearchPapersResponse:
+    try:
+        return search_papers(
+            query=query,
+            limit=limit,
+            start_date=start_date,
+            end_date=end_date,
+        )
+    except BriefServiceError as exc:
+        detail = str(exc)
+        status_code = (
+            status.HTTP_400_BAD_REQUEST
+            if "query" in detail.lower() or "start_date" in detail.lower() or "end_date" in detail.lower()
+            else status.HTTP_502_BAD_GATEWAY
+        )
+        raise HTTPException(
+            status_code=status_code,
+            detail=detail,
         ) from exc
 
 
@@ -55,6 +85,7 @@ def register_push_token(
     settings: Settings = Depends(get_settings),
 ) -> PushTokenRegistrationResponse:
     save_device_preferences(
+        database_url=settings.database_url,
         storage_dir=Path(settings.device_preferences_storage_dir),
         payload=payload,
     )
@@ -85,6 +116,7 @@ def read_device_preferences(
         )
 
     record = get_device_preferences(
+        database_url=settings.database_url,
         storage_dir=Path(settings.device_preferences_storage_dir),
         device_id=device_id,
     )
@@ -112,6 +144,7 @@ def generate_digest(
 
     return queue_digest_generation(
         topics=topics,
+        database_url=settings.database_url,
         digest_size=settings.digest_size,
         storage_dir=Path(settings.digest_storage_dir),
     )

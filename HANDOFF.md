@@ -18,13 +18,14 @@
 - Mobile screen coverage exists for SearchScreen, DailyBriefScreen, and TopicOnboardingScreen.
 - Playwright passes on the current Expo web critical path.
 - Android emulator Maestro passes on the current Expo Go path.
+- Android emulator dev-client is working locally from the current repo path, including search, detail, save and unsave, brief loading, and settings topic editing.
 
 ## Current Blockers
 
 - Search quality is still too literal for short natural-language prompts.
 - Backend infrastructure is still local-prototype grade and needs a real hosted HTTPS deployment path.
 - Notification delivery is not implemented; only registration exists.
-- Android dev-client work still needs to be completed from the short Windows path.
+- Local Android Settings still show an expected Expo and Firebase notification-registration warning until Android push credentials are configured.
 - iOS release work has not yet been validated through a real TestFlight path.
 
 ## Pick Back Up Here
@@ -34,7 +35,7 @@ Resume at `v0.4 Prototype Hardening`, but shift the emphasis from product semant
 Recommended next sequence:
 
 1. Improve backend query handling so short natural-language prompts return stronger results.
-2. Finish Android dev-client validation from `C:\w\sbm\mobile`.
+2. Configure Android push credentials or defer notifications more explicitly in the UI.
 3. Define the production backend hosting shape and environment config.
 4. Prepare the Android internal-release path.
 5. Stand up the first iOS build and TestFlight path.
@@ -56,11 +57,7 @@ cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && npm run test
 ```
 
 ```bash
-cd /c/w/sbm/mobile && npm run android:dev-client -- --port 8082
-```
-
-```bash
-cd /c/w/sbm/mobile && npm run start:dev-client
+cd /c/Users/pchri/Documents/PhoneApps/signal-brief-mobile/mobile && npm run android
 ```
 
 ## Last Verified State
@@ -68,5 +65,6 @@ cd /c/w/sbm/mobile && npm run start:dev-client
 - Playwright web smoke path is green.
 - Android emulator Maestro path is green on Expo Go.
 - Backend tests and focused mobile tests are green.
-- Search and Brief screens render on emulator after the runtime bootstrap work.
-- The highest-value remaining work is search quality, backend production readiness, and Android/iOS release preparation.
+- Android emulator dev-client now supports laptop keyboard input after the local AVD host keyboard setting was corrected.
+- Search, Brief, Saved, outbound arXiv linking, and settings topic editing all worked in the Android emulator during manual testing.
+- The highest-value remaining work is search quality, notification credential setup, backend production readiness, and Android and iOS release preparation.
